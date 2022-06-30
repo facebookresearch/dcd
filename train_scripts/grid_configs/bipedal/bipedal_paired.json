@@ -1,0 +1,68 @@
+{
+	"grid" :{
+		"env_name":[
+			"BipedalWalker-Adversarial-v0"
+		],
+
+	  "ued_algo": ["paired"],
+	  "num_processes": [16],
+	  "num_env_steps": [2000000000],
+	  "num_steps": [2048],
+	  "ppo_epoch": [5],
+	  "num_mini_batch":[32],
+	  "normalize_returns": [true],
+
+	  "checkpoint_basis":["student_grad_updates"],
+	  "archive_interval": [5000],
+
+	  "recurrent_agent": [false],
+	  "recurrent_adversary_env": [false],
+	  "recurrent_hidden_size": [1],
+
+	  "lr": [3e-4],
+	  "max_grad_norm": [0.5],
+	  "gamma": [0.99],
+	  "gae_lambda": [0.9],
+	  "value_loss_coef": [0.5],
+	  "entropy_coef": [0.001],
+	  "adv_entropy_coef": [0.01],
+	  "clip_value_loss": [false],
+	  "clip_param": [0.2],
+	  "reward_shaping": [true],
+	  "use_categorical_adv": [true],
+	  "use_skip": [false],
+	  "choose_start_pos": [false],
+	  "sparse_rewards":[false],
+	  "handle_timelimits": [true],
+
+	  "adv_max_grad_norm": [0.5],
+	  "adv_ppo_epoch": [8],
+	  "adv_num_mini_batch": [4],
+	  "adv_normalize_returns": [false],
+	  "adv_use_popart": [false],
+
+		"use_plr": [false],
+		"level_replay_strategy":["positive_value_loss"],
+		"level_replay_score_transform":["rank"],
+		"level_replay_prob": [0.0],
+		"level_replay_rho":[0.5],
+		"level_replay_seed_buffer_size":[1000],
+		"staleness_coef": [0.5],
+		"no_exploratory_grad_updates": [false],
+
+	  "test_env_names": ["BipedalWalker-v3,BipedalWalkerHardcore-v3,BipedalWalker-Med-Stairs-v0,BipedalWalker-Med-PitGap-v0,BipedalWalker-Med-StumpHeight-v0,BipedalWalker-Med-Roughness-v0"],
+
+	  "log_dir": ["~/logs/accel"],
+	  "log_interval": [10],
+	  "test_interval": [100],
+	  "test_num_episodes":[10],
+	  "test_num_processes":[2],
+	  "screenshot_interval":[200],
+	  "log_plr_buffer_stats": [true],
+	  "log_replay_complexity": [true],
+	  "checkpoint":[true],
+
+    "log_action_complexity": [false],
+    "log_grad_norm": [true]
+	}
+}

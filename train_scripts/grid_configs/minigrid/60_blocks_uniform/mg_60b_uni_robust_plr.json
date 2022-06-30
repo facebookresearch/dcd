@@ -1,0 +1,51 @@
+{
+  "grid" :{
+    "env_name":[
+      "MultiGrid-GoalLastVariableBlocksAdversarialEnv-v0"
+    ],
+
+    "ued_algo": ["domain_randomization"],
+    "num_processes": [32],
+    "num_env_steps": [250000000],
+    "num_steps": [256],
+    "ppo_epoch": [5],
+    "num_mini_batch":[1],
+    "handle_timelimits":[true],
+
+    "checkpoint_basis":["student_grad_updates"],
+    "archive_interval": [5000],
+
+    "lr": [1e-4],
+    "gamma": [0.995],
+    "entropy_coef": [0.0],
+    "adv_entropy_coef": [0.0],
+
+    "recurrent_arch": ["lstm"],
+    "recurrent_agent": [true],
+    "recurrent_adversary_env": [false],
+    "recurrent_hidden_size": [256],
+
+    "use_plr": [true],
+    "level_replay_prob": [0.5],
+    "level_replay_rho":[0.5],
+    "level_replay_seed_buffer_size":[4000],
+    "level_replay_temperature": [0.3],
+    "level_replay_strategy": ["positive_value_loss"],
+    "level_replay_score_transform": ["rank"],
+    "no_exploratory_grad_updates": [true],
+
+    "use_editor": [false],
+
+    "test_env_names": ["MultiGrid-SixteenRooms-v0,MultiGrid-Maze-v0,MultiGrid-Labyrinth-v0"],
+
+    "log_dir": ["~/logs/accel"],
+    "log_interval": [25],
+    "log_action_complexity": [true],
+    "log_plr_buffer_stats": [true],
+    "log_replay_complexity": [true],
+    "reject_unsolvable_seeds": [false],
+    "screenshot_interval": [1000],
+
+    "checkpoint": [true]
+  }
+}
