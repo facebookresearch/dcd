@@ -73,7 +73,7 @@ Separate archived model checkpoints can be saved at specific intervals by specif
 ## Evaluating agents with [`eval.py`](https://github.com/facebookresearch/dcd/blob/master/eval.py)
 
 ### Evaluating a single model
-The following command evaluates a `<model>.tar` in an experiment results directory, `<xpid>`, in a base log output directory `<log_dir>` for `<num_episodes>` episodes in each of the environments named `<env_name1>`, `<env_name1>`, and `<env_name1>`, and outputs the results as a .csv in `<result_dir>`.
+The following command evaluates a `<model>.tar` in an experiment results directory, `<xpid>`, in a base log output directory `<log_dir>` for `<num_episodes>` episodes in each of the environments named `<env_name1>`, `<env_name2>`, and `<env_name3>`, and outputs the results as a .csv in `<result_dir>`.
 ```shell
 python -m eval \
 --base_path <log_dir> \
