@@ -1,0 +1,15 @@
+metric,0,1,2,3,4,5,6,7,8,9
+solved_rate:MultiGrid-SixteenRooms-v0,0.0,0.11,0.0,0.0,0.0,0.79,0.03,0.0,0.0,0.0
+test_returns:MultiGrid-SixteenRooms-v0,0.0,0.045439996,0.0,0.0,0.0,0.38845998,0.0065999995,0.0,0.0,0.0
+solved_rate:MultiGrid-Labyrinth-v0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+test_returns:MultiGrid-Labyrinth-v0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+solved_rate:MultiGrid-Labyrinth2-v0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+test_returns:MultiGrid-Labyrinth2-v0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+solved_rate:MultiGrid-Maze-v0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+test_returns:MultiGrid-Maze-v0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+solved_rate:MultiGrid-Maze2-v0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+test_returns:MultiGrid-Maze2-v0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+solved_rate:MiniGrid-SimpleCrossingS11N5-v0,0.0,0.01,0.16,0.0,0.0,0.52,0.08,0.15,0.01,0.0
+test_returns:MiniGrid-SimpleCrossingS11N5-v0,0.0,0.009274793,0.098320246,0.0,0.0,0.38455373,0.022002066,0.10232231,0.0010185951,0.0
+solved_rate:MultiGrid-SmallCorridor-v0,0.0,0.43,0.01,0.0,0.0,0.21,0.13,0.0,0.0,0.0
+test_returns:MultiGrid-SmallCorridor-v0,0.0,0.4134,0.0019200001,0.0,0.0,0.1398,0.064040005,0.0,0.0,0.0

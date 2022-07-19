@@ -1,0 +1,66 @@
+{
+	"grid" :{
+		"env_name":[
+			"CarRacing-Bezier-Adversarial-v0"
+		],
+
+	  "ued_algo": ["domain_randomization"],
+	  "num_processes": [16],
+	  "num_env_steps": [5500000],
+	  "num_steps": [125],
+	  "ppo_epoch": [8],
+	  "num_mini_batch":[4],
+	  "grayscale": [false],
+	  "crop_frame": [false],
+	  "num_action_repeat": [8],
+	  "frame_stack": [4],
+	  "normalize_returns": [true],
+	  "use_popart": [false],
+	  "handle_timelimits": [true],
+
+	  "recurrent_agent": [false],
+	  "recurrent_adversary_env": [false],
+	  "recurrent_hidden_size": [1],
+
+	  "lr": [3e-4],
+	  "max_grad_norm": [0.5],
+	  "gamma": [0.99],
+	  "gae_lambda": [0.9],
+	  "value_loss_coef": [0.5],
+	  "entropy_coef": [0.0],
+	  "clip_value_loss": [false],
+	  "clip_param": [0.2],
+	  "reward_shaping": [true],
+	  "adv_entropy_coef": [0.01],
+	  "use_categorical_adv": [true],
+	  "use_skip": [false],
+	  "choose_start_pos": [false],
+	  "sparse_rewards":[false],
+
+    "use_plr": [true],
+    "level_replay_strategy":["positive_value_loss"],
+    "level_replay_score_transform":["power"],
+    "level_replay_temperature": [1.0],
+    "staleness_coef": [0.7],
+    "level_replay_prob": [0.5],
+    "level_replay_rho":[0.5],
+    "level_replay_seed_buffer_size":[8000],
+    "no_exploratory_grad_updates": [false],
+
+	  "test_env_names": ["CarRacing-Vanilla-v0,CarRacingF1-Italy-v0,CarRacingF1-Singapore-v0,CarRacingF1-Germany-v0"],
+
+	  "log_dir": ["~/logs/dcd"],
+	  "log_interval": [10],
+	  "test_interval": [100],
+	  "test_num_episodes":[5],
+	  "test_num_processes":[5],
+	  "screenshot_interval":[200],
+	  "log_plr_buffer_stats": [true],
+	  "log_replay_complexity": [true],
+	  "checkpoint":[true],
+	  "archive_interval":[1250],
+
+    "log_action_complexity": [false],
+    "log_grad_norm": [true]
+	}
+}
