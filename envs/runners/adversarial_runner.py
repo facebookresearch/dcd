@@ -491,9 +491,6 @@ class AdversarialRunner(object):
 
         if level_sampler and level_replay:
             rollout_info.update({
-                'shortest_path_lengths': self.venv.get_shortest_path_length(),
-                'num_blocks': self.venv.get_num_blocks(),
-                'passable_ratio': self.venv.get_passable(),
                 'solved_idx': np.zeros(args.num_processes, dtype=np.bool)
             })
             
