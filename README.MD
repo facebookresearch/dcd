@@ -90,9 +90,10 @@ Similarly, the following command evaluates all models named `<model>.tar` in exp
 python -m eval \
 --base_path <log_dir> \
 --prefix <xpid_prefix> \
---model_tar <model>
+--model_tar <model> \
 --env_names <env_name1>,<env_name2>,<env_name3> \
 --num_episodes <num_episodes> \
+--accumulator mean \
 --result_path <result_dir>
 ```
 
