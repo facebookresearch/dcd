@@ -209,10 +209,7 @@ class RNN(nn.Module):
         return x, hxs
 
 def one_hot(dim, inputs, device='cpu'):
-    B = inputs.shape[0]
-    one_hot = torch.zeros(B, dim, device=device)
-    one_hot[:, inputs.long()] = 1
-
+    one_hot = torch.nn.functional.one_hot(inputs.long(), dim).squeeze(1).float()
     return one_hot
 
 def make_fc_layers_with_hidden_sizes(sizes, input_size):
