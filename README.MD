@@ -158,6 +158,7 @@ The [MiniGrid-based mazes](https://github.com/facebookresearch/dcd/tree/master/e
 | PAIRED+BC+HiEnt (Uniform(0-60) blocks) | `minigrid/60_blocks_uniform/mg_60b_uni_paired_bc_hient.json`| 
 
 > NOTE: To disable `HiEnt` (for e.g. in BC experiments), set `entropy_coef = 0.0` and `adv_entropy_coef = 0.0`
+
 > NOTE: In BC experiments, set `use_kl_only_agent = True` for `UniBC` and `use_kl_only_agent = False` for `BiBC`
 
 ### 🏎 CarRacing
@@ -186,6 +187,7 @@ The [`CarRacingF1`](https://github.com/facebookresearch/dcd/tree/master/envs/box
 | PAIRED+BC+HiEnt | `car_racing/cr_paired_bc_hient.json`| 
 
 > NOTE: To disable `HiEnt` (for e.g. in BC experiments), set `entropy_coef = 0.0` and `adv_entropy_coef = 0.0`
+
 > NOTE: In BC experiments, set `use_kl_only_agent = True` for `UniBC` and `use_kl_only_agent = False` for `BiBC`
 
 ### 🦿🦿 BipedalWalker
