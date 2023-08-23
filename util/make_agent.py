@@ -216,6 +216,7 @@ def make_agent(name, env, args, device='cpu'):
             num_mini_batch=num_mini_batch,
             value_loss_coef=args.value_loss_coef,
             entropy_coef=entropy_coef,
+            kl_loss_coef=args.kl_loss_coef,
             lr=args.lr,
             eps=args.eps,
             max_grad_norm=max_grad_norm,

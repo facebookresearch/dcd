@@ -146,7 +146,7 @@ class CarRacingNetwork(DeviceAwareModule):
 		image_embedding = self.image_embed(inputs).squeeze()
 		return self.critic(image_embedding)
 
-	def evaluate_actions(self, inputs, rnn_hxs, masks, action):
+	def evaluate_actions(self, inputs, rnn_hxs, masks, action, return_policy_logits=False):
 		image_embedding = self.image_embed(inputs).squeeze()
 
 		actor_fc_embed = self.actor_fc(image_embedding)
@@ -161,6 +161,9 @@ class CarRacingNetwork(DeviceAwareModule):
 		dist_entropy = dist.entropy().mean()
 
 		value = self.critic(image_embedding)
+
+		if return_policy_logits:
+			return value, action_log_probs, dist_entropy, rnn_hxs, dist
 
 		return value, action_log_probs, dist_entropy, rnn_hxs
 

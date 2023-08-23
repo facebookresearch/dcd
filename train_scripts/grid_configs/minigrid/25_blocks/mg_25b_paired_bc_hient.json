@@ -1,0 +1,40 @@
+{
+  "grid" :{
+    "env_name":[
+        "MultiGrid-GoalLastFewerBlocksAdversarial-v0"
+    ],
+
+    "ued_algo": ["paired"],
+    "num_processes": [32],
+    "num_env_steps": [250000000],
+    "num_steps": [256],
+    "ppo_epoch": [5],
+    "num_mini_batch":[1],
+    "handle_timelimits":[true],
+
+    "lr": [1e-4],
+    "gamma": [0.995],
+    "entropy_coef": [0.005],
+    "adv_entropy_coef": [0.05],
+
+    "recurrent_arch": ["lstm"],
+    "recurrent_agent": [true],
+    "recurrent_adversary_env": [true],
+    "recurrent_hidden_size": [256],
+
+    "use_behavioural_cloning": [true],
+    "kl_loss_coef": [0.1],
+    "kl_update_step": [25],
+    "use_kl_only_agent": [false, true],
+
+    "log_dir": ["~/logs/dcd"],
+    "log_interval": [25],
+    "log_action_complexity": [true],
+    "archive_interval": [30518],
+    "log_plr_buffer_stats": [true],
+    "log_replay_complexity": [true],
+    "reject_unsolvable_seeds": [false], 
+
+    "checkpoint": [true]
+  }
+}

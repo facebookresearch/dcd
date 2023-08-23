@@ -174,7 +174,7 @@ class MultigridNetwork(DeviceAwareModule):
         core_features, rnn_hxs = self._forward_base(inputs, rnn_hxs, masks)
         return self.critic(core_features)
 
-    def evaluate_actions(self, inputs, rnn_hxs, masks, action):
+    def evaluate_actions(self, inputs, rnn_hxs, masks, action, return_policy_logits=False):
         core_features, rnn_hxs = self._forward_base(inputs, rnn_hxs, masks)
 
         dist = self.actor(core_features)
@@ -182,5 +182,8 @@ class MultigridNetwork(DeviceAwareModule):
 
         action_log_probs = dist.log_probs(action)
         dist_entropy = dist.entropy().mean()
+        
+        if return_policy_logits:
+            return value, action_log_probs, dist_entropy, rnn_hxs, dist
 
         return value, action_log_probs, dist_entropy, rnn_hxs
