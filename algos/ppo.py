@@ -27,7 +27,7 @@ class PPO():
                  num_mini_batch,
                  value_loss_coef,
                  entropy_coef,
-                 kl_loss_coef=0.0
+                 kl_loss_coef=0.0,
                  lr=None,
                  eps=None,
                  max_grad_norm=None,
