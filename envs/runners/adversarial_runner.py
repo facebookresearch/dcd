@@ -762,11 +762,11 @@ class AdversarialRunner(object):
             elif self.base_levels == 'easy':
                 if args.num_processes >= 4:
                     # take top 4
-                    easy = list(np.argsort((agent_info['mean_return'].detach().cpu().numpy() - agent_info['batched_value_loss'].detach().cpu().numpy()))[:4])
+                    easy = list(np.argsort((agent_info['mean_return'].detach().cpu().numpy() - agent_info['batched_value_loss'].detach().cpu().numpy()).flatten())[:4])
                     fixed_seeds = [env_info[x.item()] for x in easy] * int(args.num_processes/4)
                 else:
                     # take top 1
-                    easy = np.argmax((agent_info['mean_return'].detach().cpu().numpy() - agent_info['batched_value_loss'].detach().cpu().numpy()))
+                    easy = np.argmax((agent_info['mean_return'].detach().cpu().numpy() - agent_info['batched_value_loss'].detach().cpu().numpy()).flatten())
                     fixed_seeds = [env_info[easy]] * args.num_processes
 
             level_sampler, is_updateable = self._get_level_sampler('agent')
