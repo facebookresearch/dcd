@@ -18,6 +18,7 @@ This codebase contains an extensible framework for implementing various Unsuperv
 We also include experiment configurations for the main experiments in the following papers on DCD methods:
 - [Replay-Guided Adversarial Design. Jiang et al, 2021 (NeurIPS 2021)](https://arxiv.org/abs/2110.02439)
 - [Evolving Curricula with Regret-Based Environment Design. Parker-Holder et al, 2022 (ICML 2022)](https://accelagent.github.io/)
+- [Stabilizing Unsupervised Environment Design with a Learned Adversary. Mediratta et al, 2023 (CoLLAs 2023)](https://arxiv.org/abs/2308.10797)
 
 ## Citation
 The core components of this codebase, as well as the `CarRacingBezier` and `CarRacingF1` environments, were introduced in [Jiang et al, 2021](https://arxiv.org/abs/2110.02439). If you use this code to develop your own UED algorithms in academic contexts, please cite 
@@ -29,6 +30,9 @@ Additionally, if you use ACCEL or the adversarial `BipedalWalker` environments i
     
     Parker-Holder et al, "Evolving Curricula with Regret-Based Environment Design", 2022.
 ([Bibtex here](https://raw.githubusercontent.com/facebookresearch/dcd/main/docs/bibtex/accel.bib))
+
+    Mediratta et al, "Stabilizing Unsupervised Environment Design with a Learned Adversary", 2023.
+([Bibtex here](https://raw.githubusercontent.com/facebookresearch/dcd/main/docs/bibtex/collas.bib))
 
 ## Setup
 To install the necessary dependencies, run the following commands:
@@ -145,6 +149,18 @@ The [MiniGrid-based mazes](https://github.com/facebookresearch/dcd/tree/master/e
 | PLR<sup>⊥</sup> (Uniform(0-60) blocks) | `minigrid/mg_60b_uni_robust_plr.json` |
 | DR (Uniform(0-60) blocks) | `minigrid/mg_60b_uni_dr.json`|
 
+#### Experiments from [Mediratta et al, 2023](https://arxiv.org/abs/2308.10797)
+| Method        | json config  |
+| ------------- |:-------------|
+| PAIRED+HiEnt (25 blocks) | `minigrid/25_blocks/mg_25b_paired_hient.json`| 
+| PAIRED+HiEnt (Uniform(0-60) blocks) | `minigrid/60_blocks_uniform/mg_60b_uni_paired_hient.json`| 
+| PAIRED+BC+HiEnt (25 blocks) | `minigrid/25_blocks/mg_25b_paired_bc_hient.json`| 
+| PAIRED+BC+HiEnt (Uniform(0-60) blocks) | `minigrid/60_blocks_uniform/mg_60b_uni_paired_bc_hient.json`| 
+
+> NOTE: To disable `HiEnt` (for e.g. in BC experiments), set `entropy_coef = 0.0` and `adv_entropy_coef = 0.0`
+
+> NOTE: In BC experiments, set `use_kl_only_agent = True` for `UniBC` and `use_kl_only_agent = False` for `BiBC`
+
 ### 🏎 CarRacing
 
 #### `CarRacingBezier`
@@ -163,6 +179,16 @@ The [`CarRacingF1`](https://github.com/facebookresearch/dcd/tree/master/envs/box
 | REPAIRED| `car_racing/cr_repaired.json`|
 | PAIRED | `car_racing/cr_paired.json`|
 | DR | `car_racing/cr_dr.json`|
+
+#### Experiments from [Mediratta et al, 2023](https://arxiv.org/abs/2308.10797)
+| Method        | json config  |
+| ------------- |:-------------|
+| PAIRED+HiEnt | `car_racing/cr_paired_hient.json`| 
+| PAIRED+BC+HiEnt | `car_racing/cr_paired_bc_hient.json`| 
+
+> NOTE: To disable `HiEnt` (for e.g. in BC experiments), set `entropy_coef = 0.0` and `adv_entropy_coef = 0.0`
+
+> NOTE: In BC experiments, set `use_kl_only_agent = True` for `UniBC` and `use_kl_only_agent = False` for `BiBC`
 
 ### 🦿🦿 BipedalWalker
 

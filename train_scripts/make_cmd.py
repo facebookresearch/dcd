@@ -147,6 +147,11 @@ def xpid_from_params(p, prefix=''):
         rnn_prefix = f'-{rnn_arch}{rnn_hidden}{rnn_agent}{rnn_env}'
 
     ppo_prefix = f"-lr{p['lr']}-epoch{p['ppo_epoch']}-mb{p['num_mini_batch']}-v{p['value_loss_coef']}-gc{p['max_grad_norm']}"
+    
+    if p['use_behavioural_cloning']:
+        ppo_prefix = f"{ppo_prefix}-kl{p['kl_loss_coef']}-klstep{p['kl_update_step']}"
+        if p['use_kl_only_agent']:
+            ppo_prefix = f"{ppo_prefix}-uni"
 
     if p['env_name'].startswith('CarRacing'):
         clip_v_prefix = ''
@@ -236,6 +241,12 @@ if __name__ == '__main__':
         'level_editor_method': 'random',
         'num_edits': 0,
         'base_levels': 'batch',
+        
+        # Behavioural Cloning params
+        'use_behavioural_cloning': False,
+        'kl_loss_coef': 0.1,
+        'kl_update_step': 1,
+        'use_kl_only_agent': False,
 
         # Logging params
         'log_interval': 25,

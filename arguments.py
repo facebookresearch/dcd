@@ -322,6 +322,26 @@ parser.add_argument(
     default=0.,
     help="Number of edits to make each time a level is mutated.")
 
+# BC arguments
+parser.add_argument(
+    '--use_behavioural_cloning',
+    type=str2bool, nargs='?', const=True, default=False,
+    help='Whether to use behavioural cloning')
+parser.add_argument(
+    '--kl_update_step',
+    type=float,
+    default=1,
+    help='Number of steps after which KL loss should be used')
+parser.add_argument(
+    '--kl_loss_coef',
+    type=float,
+    default=0.1,
+    help='KL divergence loss coefficient for behavioural cloning (default: 0.1)')
+parser.add_argument(
+    '--use_kl_only_agent',
+    type=str2bool, nargs='?', const=True, default=False,
+    help='Use behavioural cloning loss in agent only. Default behaviour is bc in both')
+
 # Fine-tuning arguments.
 parser.add_argument(
     '--xpid_finetune',

@@ -157,12 +157,15 @@ class BipedalWalkerStudentPolicy(DeviceAwareModule):
         value, _, _ = self.base(inputs, rnn_hxs, masks)
         return value
 
-    def evaluate_actions(self, inputs, rnn_hxs, masks, action):
+    def evaluate_actions(self, inputs, rnn_hxs, masks, action, return_policy_logits=False):
         value, actor_features, rnn_hxs = self.base(inputs, rnn_hxs, masks)
         dist = self.dist(actor_features)
 
         action_log_probs = dist.log_probs(action)
         dist_entropy = dist.entropy().mean()
+        
+        if return_policy_logits:
+            return value, action_log_probs, dist_entropy, rnn_hxs, dist
 
         return value, action_log_probs, dist_entropy, rnn_hxs
 

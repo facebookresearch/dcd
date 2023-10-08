@@ -27,6 +27,7 @@ class PPO():
                  num_mini_batch,
                  value_loss_coef,
                  entropy_coef,
+                 kl_loss_coef=0.0,
                  lr=None,
                  eps=None,
                  max_grad_norm=None,
@@ -42,6 +43,7 @@ class PPO():
 
         self.value_loss_coef = value_loss_coef
         self.entropy_coef = entropy_coef
+        self.kl_loss_coef = kl_loss_coef
 
         self.max_grad_norm = max_grad_norm
 
@@ -58,7 +60,9 @@ class PPO():
         total_norm = total_norm ** (1. / 2)
         return total_norm
 
-    def update(self, rollouts, discard_grad=False):
+    def update(self, rollouts, discard_grad=False, kl_dict=None):
+        use_kl_loss = (kl_dict is not None) and (self.kl_loss_coef > 0.0)
+        
         if rollouts.use_popart:
             value_preds = rollouts.denorm_value_preds
         else:
@@ -71,6 +75,8 @@ class PPO():
         value_loss_epoch = 0
         action_loss_epoch = 0
         dist_entropy_epoch = 0
+        if use_kl_loss:
+            kl_loss_epoch = 0
 
         if self.log_grad_norm:
             grad_norms = []
@@ -88,9 +94,18 @@ class PPO():
                 value_preds_batch, return_batch, masks_batch, old_action_log_probs_batch, \
                         adv_targ = sample
                 
-                values, action_log_probs, dist_entropy, _ = self.actor_critic.evaluate_actions(
-                    obs_batch, recurrent_hidden_states_batch, masks_batch,
-                    actions_batch)
+                if use_kl_loss:
+                    values, action_log_probs, dist_entropy, _, dist_protagonist = self.actor_critic.evaluate_actions(
+                        obs_batch, recurrent_hidden_states_batch, masks_batch,
+                        actions_batch, return_policy_logits=True)
+                    with torch.no_grad():
+                        _, _, _, _, dist_antagonist = kl_dict['antagonist_model'].evaluate_actions(
+                        obs_batch, recurrent_hidden_states_batch, masks_batch,
+                        actions_batch, return_policy_logits=True)
+                else:
+                    values, action_log_probs, dist_entropy, _ = self.actor_critic.evaluate_actions(
+                        obs_batch, recurrent_hidden_states_batch, masks_batch,
+                        actions_batch)
                     
                 ratio = torch.exp(action_log_probs -
                                   old_action_log_probs_batch)
@@ -114,8 +129,14 @@ class PPO():
                 else:
                     value_loss = F.smooth_l1_loss(values, return_batch)
 
+                if use_kl_loss:
+                    kl_div = torch.distributions.kl.kl_divergence(dist_antagonist, dist_protagonist)
+                    bs = kl_div.shape[0]
+                    kl_loss = kl_div.sum() / bs
                 self.optimizer.zero_grad()
                 loss = (value_loss*self.value_loss_coef + action_loss - dist_entropy*self.entropy_coef)
+                if use_kl_loss:
+                    loss += (self.kl_loss_coef*kl_loss)
 
                 loss.backward()
 
@@ -132,15 +153,21 @@ class PPO():
                 value_loss_epoch += value_loss.item()
                 action_loss_epoch += action_loss.item()
                 dist_entropy_epoch += dist_entropy.item()
+                if use_kl_loss:
+                    kl_loss_epoch += kl_loss.item()
 
         num_updates = self.ppo_epoch * self.num_mini_batch
 
         value_loss_epoch /= num_updates
         action_loss_epoch /= num_updates
         dist_entropy_epoch /= num_updates
+        if use_kl_loss:
+            kl_loss_epoch /= num_updates
 
         info = {}
         if self.log_grad_norm:
             info = {'grad_norms': grad_norms}
+        if use_kl_loss:
+            info['kl_loss'] = kl_loss_epoch
 
         return value_loss_epoch, action_loss_epoch, dist_entropy_epoch, info
