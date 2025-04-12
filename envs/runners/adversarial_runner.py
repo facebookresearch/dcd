@@ -441,7 +441,7 @@ class AdversarialRunner(object):
         level_samplers = self.all_level_samplers
 
         if self.args.reject_unsolvable_seeds:
-            solvable = np.array(solvable, dtype=np.bool)
+            solvable = np.array(solvable, dtype=np.bool_)
             seeds = np.array(seeds, dtype=np.int)[solvable]
             solvable = solvable[solvable]
 
@@ -522,7 +522,7 @@ class AdversarialRunner(object):
 
         if level_sampler and level_replay:
             rollout_info.update({
-                'solved_idx': np.zeros(args.num_processes, dtype=np.bool)
+                'solved_idx': np.zeros(args.num_processes, dtype=np.bool_)
             })
             
         for step in range(num_steps):
@@ -558,7 +558,7 @@ class AdversarialRunner(object):
                             infos[i]['truncated'] = True
                             infos[i]['truncated_obs'] = get_obs_at_index(obs, i)
 
-                done = np.ones_like(done, dtype=np.float)
+                done = np.ones_like(done, dtype=np.float64)
 
             if level_sampler and level_replay:
                 next_level_seeds = [s for s in self.current_level_seeds]

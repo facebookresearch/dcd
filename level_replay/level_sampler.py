@@ -76,11 +76,11 @@ class LevelSampler():
         self._init_seed_index(seeds)
 
         self.unseen_seed_weights = np.array([1.]*N)
-        self.seed_scores = np.array([0.]*N, dtype=np.float)
-        self.partial_seed_scores = np.zeros((num_actors, N), dtype=np.float)
-        self.partial_seed_max_scores = np.ones((num_actors, N), dtype=np.float)*float('-inf')
+        self.seed_scores = np.array([0.]*N, dtype=np.float64)
+        self.partial_seed_scores = np.zeros((num_actors, N), dtype=np.float64)
+        self.partial_seed_max_scores = np.ones((num_actors, N), dtype=np.float64)*float('-inf')
         self.partial_seed_steps = np.zeros((num_actors, N), dtype=np.int32)
-        self.seed_staleness = np.array([0.]*N, dtype=np.float)
+        self.seed_staleness = np.array([0.]*N, dtype=np.float64)
 
         self.running_sample_count = 0
 
@@ -91,7 +91,7 @@ class LevelSampler():
         # Handle grounded value losses
         self.grounded_values = None
         if self.strategy.startswith('grounded'):
-            self.grounded_values = np.array([np.NINF]*N, dtype=np.float)
+            self.grounded_values = np.array([np.NINF]*N, dtype=np.float64)
 
         # Only used for infinite seed setting
         self.sample_full_distribution = sample_full_distribution
@@ -135,7 +135,7 @@ class LevelSampler():
         """
         self.track_solvable = True
         self.staging_seed2solvable = {}
-        self.seed_solvable = np.ones(self.seed_buffer_size, dtype=np.bool)
+        self.seed_solvable = np.ones(self.seed_buffer_size, dtype=np.bool_)
 
     @property
     def _proportion_filled(self):
@@ -691,7 +691,7 @@ class LevelSampler():
         sample_weights = self.sample_weights()
 
         if np.isclose(np.sum(sample_weights), 0):
-            sample_weights = np.ones_like(self.seeds, dtype=np.float)/len(self.seeds)
+            sample_weights = np.ones_like(self.seeds, dtype=np.float64)/len(self.seeds)
             sample_weights = sample_weights*(1-self.unseen_seed_weights)
             sample_weights /= np.sum(sample_weights)
         elif np.sum(sample_weights, 0) != 1.0:
@@ -757,7 +757,7 @@ class LevelSampler():
         if z > 0:
             weights /= z
         else:
-            weights = np.ones_like(weights, dtype=np.float)/len(weights)
+            weights = np.ones_like(weights, dtype=np.float64)/len(weights)
             weights = weights * (1-self.unseen_seed_weights)
             weights /= np.sum(weights)
 

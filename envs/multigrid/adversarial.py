@@ -406,7 +406,7 @@ class AdversarialEnv(multigrid.MultiGridEnv):
 
   def _count_walls(self):
     wall_mask = np.array(
-      [1 if isinstance(x, minigrid.Wall) else 0 for x in self.grid.grid], dtype=np.bool)\
+      [1 if isinstance(x, minigrid.Wall) else 0 for x in self.grid.grid], dtype=np.bool_)\
       .reshape(self.height, self.width)[1:-1,1:-1]
     self.wall_mask = wall_mask
 
