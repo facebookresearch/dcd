@@ -30,50 +30,50 @@ stair_width (fixed)
 
 """
 PARAM_RANGES_DEBUG = {
-    1: [0,0.01], # ground roughness
-    2: [0,0], # pit gap 1
-    3: [0.01,0.01], # pit gap 2
-    4: [0,0], # stump height 1
-    5: [0.01,0.01], # stump height 2
-    6: [0,0], # stair height 1
-    7: [0.01,0.01], # stair height 2
-    8: [1,1], # stair steps
+    1: [0, 0.01],  # ground roughness
+    2: [0, 0],  # pit gap 1
+    3: [0.01, 0.01],  # pit gap 2
+    4: [0, 0],  # stump height 1
+    5: [0.01, 0.01],  # stump height 2
+    6: [0, 0],  # stair height 1
+    7: [0.01, 0.01],  # stair height 2
+    8: [1, 1],  # stair steps
 }
 
 PARAM_RANGES_EASY = {
-    1: [0,0.6], # ground roughness
-    2: [0,0], # pit gap 1
-    3: [0.8,0.8], # pit gap 2
-    4: [0,0], # stump height 1
-    5: [0.4,0.4], # stump height 2
-    6: [0,0], # stair height 1
-    7: [0.4,0.4], # stair height 2
-    8: [1,1], # stair steps
+    1: [0, 0.6],  # ground roughness
+    2: [0, 0],  # pit gap 1
+    3: [0.8, 0.8],  # pit gap 2
+    4: [0, 0],  # stump height 1
+    5: [0.4, 0.4],  # stump height 2
+    6: [0, 0],  # stair height 1
+    7: [0.4, 0.4],  # stair height 2
+    8: [1, 1],  # stair steps
 }
 
 PARAM_RANGES_FULL = {
-    1: [0,10], # ground roughness
-    2: [0,10], # pit gap 1
-    3: [0,10], # pit gap 2
-    4: [0,5], # stump height 1
-    5: [0,5], # stump height 2
-    6: [0,5], # stair height 1
-    7: [0,5], # stair height 2
-    8: [1,9], # stair steps
+    1: [0, 10],  # ground roughness
+    2: [0, 10],  # pit gap 1
+    3: [0, 10],  # pit gap 2
+    4: [0, 5],  # stump height 1
+    5: [0, 5],  # stump height 2
+    6: [0, 5],  # stair height 1
+    7: [0, 5],  # stair height 2
+    8: [1, 9],  # stair steps
 }
 
 PARAM_MUTATIONS = {
-    1: [0,0.6], # ground roughness
-    2: [0.4], # pit gap 1
-    3: [0.4], # pit gap 2
-    4: [0.2], # stump height 1
-    5: [0.2], # stump height 2
-    6: [0.2], # stair height 1
-    7: [0.2], # stair height 2
-    8: [1], # stair steps
+    1: [0, 0.6],  # ground roughness
+    2: [0.4],  # pit gap 1
+    3: [0.4],  # pit gap 2
+    4: [0.2],  # stump height 1
+    5: [0.2],  # stump height 2
+    6: [0.2],  # stair height 1
+    7: [0.2],  # stair height 2
+    8: [1],  # stair steps
 }
 
-DEFAULT_LEVEL_PARAMS_VEC = [0,0,10,0,5,0,5,9]
+DEFAULT_LEVEL_PARAMS_VEC = [0, 0, 10, 0, 5, 0, 5, 9]
 STUMP_WIDTH_RANGE = [1, 2]
 STUMP_FLOAT_RANGE = [0, 1]
 STAIR_WIDTH_RANGE = [4, 5]
@@ -84,21 +84,22 @@ def rand_int_seed():
 
 
 class BipedalWalkerAdversarialEnv(BipedalWalkerCustom):
-    def __init__(self, mode='full', poet=False, random_z_dim=10, seed=0):
+    def __init__(self, mode="full", poet=False, random_z_dim=10, seed=0):
         self.mode = mode
         self.level_seed = seed
-        self.poet = poet # POET didn't use the stairs, not clear why
+        self.poet = poet  # POET didn't use the stairs, not clear why
 
         default_config = EnvConfig(
-            name='default_conf',
+            name="default_conf",
             ground_roughness=0,
-            pit_gap=[0,10],
-            stump_width=[4,5],
-            stump_height=[0,5],
-            stump_float=[0,1],
-            stair_height=[0,5],
-            stair_width=[4,5],
-            stair_steps=[1])
+            pit_gap=[0, 10],
+            stump_width=[4, 5],
+            stump_height=[0, 5],
+            stump_float=[0, 1],
+            stair_height=[0, 5],
+            stair_width=[4, 5],
+            stair_steps=[1],
+        )
 
         super().__init__(default_config, seed=seed)
 
@@ -116,12 +117,12 @@ class BipedalWalkerAdversarialEnv(BipedalWalkerCustom):
         self._update_params(self.level_params_vec)
 
         if poet:
-            self.mutations = {k:v for k,v in list(PARAM_MUTATIONS.items())[:5]}
+            self.mutations = {k: v for k, v in list(PARAM_MUTATIONS.items())[:5]}
         else:
             self.mutations = PARAM_MUTATIONS
 
         n_u_chars = max(12, len(str(rand_int_seed())))
-        self.encoding_u_chars = np.dtype(('U', n_u_chars))
+        self.encoding_u_chars = np.dtype(("U", n_u_chars))
 
         # Fixed params
         self.stump_width = STUMP_WIDTH_RANGE
@@ -130,31 +131,26 @@ class BipedalWalkerAdversarialEnv(BipedalWalkerCustom):
 
         # Create spaces for adversary agent's specs.
         self.adversary_action_dim = 1
-        self.adversary_action_space = gym.spaces.Box(low=-1, high=1, shape=(1,), dtype=np.float32)
+        self.adversary_action_space = gym.spaces.Box(
+            low=-1, high=1, shape=(1,), dtype=np.float32
+        )
 
-        self.adversary_ts_obs_space = \
-            gym.spaces.Box(
-                low=0, 
-                high=self.adversary_max_steps, 
-                shape=(1,), 
-                dtype='uint8')
-        self.adversary_randomz_obs_space = \
-            gym.spaces.Box(
-                low=0, 
-                high=1.0, 
-                shape=(random_z_dim,), 
-                dtype=np.float32)
-        self.adversary_image_obs_space = \
-            gym.spaces.Box(
-                low=0, 
-                high=10.0, 
-                shape=(len(self.level_params_vec),), 
-                dtype=np.float32)
-        self.adversary_observation_space = \
-            gym.spaces.Dict({
-                'image': self.adversary_image_obs_space, 
-                'time_step': self.adversary_ts_obs_space, 
-                'random_z': self.adversary_randomz_obs_space})
+        self.adversary_ts_obs_space = gym.spaces.Box(
+            low=0, high=self.adversary_max_steps, shape=(1,), dtype="uint8"
+        )
+        self.adversary_randomz_obs_space = gym.spaces.Box(
+            low=0, high=1.0, shape=(random_z_dim,), dtype=np.float32
+        )
+        self.adversary_image_obs_space = gym.spaces.Box(
+            low=0, high=10.0, shape=(len(self.level_params_vec),), dtype=np.float32
+        )
+        self.adversary_observation_space = gym.spaces.Dict(
+            {
+                "image": self.adversary_image_obs_space,
+                "time_step": self.adversary_ts_obs_space,
+                "random_z": self.adversary_randomz_obs_space,
+            }
+        )
 
     def reset(self):
         self.step_count = 0
@@ -170,9 +166,9 @@ class BipedalWalkerAdversarialEnv(BipedalWalkerCustom):
         self.level_seed = rand_int_seed()
 
         obs = {
-            'image': self.get_obs(),
-            'time_step': [self.adversary_step_count],
-            'random_z': self.generate_random_z()
+            "image": self.get_obs(),
+            "time_step": [self.adversary_step_count],
+            "random_z": self.generate_random_z(),
         }
 
         return obs
@@ -197,31 +193,31 @@ class BipedalWalkerAdversarialEnv(BipedalWalkerCustom):
 
     def _update_params(self, level_params_vec):
         self.ground_roughness = level_params_vec[0]
-        self.pit_gap = [level_params_vec[1],level_params_vec[2]]
+        self.pit_gap = [level_params_vec[1], level_params_vec[2]]
         self.pit_gap.sort()
-        self.stump_height = [level_params_vec[3],level_params_vec[4]]
+        self.stump_height = [level_params_vec[3], level_params_vec[4]]
         self.stump_height.sort()
         if self.poet:
             self.stair_height = []
             self.stair_steps = []
         else:
-            self.stair_height = [level_params_vec[5],level_params_vec[6]]
+            self.stair_height = [level_params_vec[5], level_params_vec[6]]
             self.stair_height.sort()
             self.stair_steps = [int(round(level_params_vec[7]))]
 
     def get_complexity_info(self):
         complexity_info = {
-            'ground_roughness': self.ground_roughness,
-            'pit_gap_low': self.pit_gap[0],
-            'pit_gap_high': self.pit_gap[1],
-            'stump_height_low': self.stump_height[0],
-            'stump_height_high': self.stump_height[1]
+            "ground_roughness": self.ground_roughness,
+            "pit_gap_low": self.pit_gap[0],
+            "pit_gap_high": self.pit_gap[1],
+            "stump_height_low": self.stump_height[0],
+            "stump_height_high": self.stump_height[1],
         }
 
         if not self.poet:
-            complexity_info['stair_height_low'] = self.stair_height[0]
-            complexity_info['stair_height_high'] = self.stair_height[1]
-            complexity_info['stair_steps'] = self.stair_steps[0]
+            complexity_info["stair_height_low"] = self.stair_height[0]
+            complexity_info["stair_height_high"] = self.stair_height[1]
+            complexity_info["stair_steps"] = self.stair_steps[0]
 
         return complexity_info
 
@@ -259,7 +255,7 @@ class BipedalWalkerAdversarialEnv(BipedalWalkerCustom):
 
         # get the current config
         config = EnvConfig(
-            name='config',
+            name="config",
             ground_roughness=self.ground_roughness,
             pit_gap=pit_gap,
             stump_width=stump_width,
@@ -267,7 +263,8 @@ class BipedalWalkerAdversarialEnv(BipedalWalkerCustom):
             stump_float=stump_float,
             stair_height=stair_height,
             stair_width=stair_width,
-            stair_steps=stair_steps)
+            stair_steps=stair_steps,
+        )
 
         return config
 
@@ -279,7 +276,7 @@ class BipedalWalkerAdversarialEnv(BipedalWalkerCustom):
         try:
             super().re_init(config, self.level_seed)
         except AssertionError:
-            super().re_init(config, self.level_seed+1)
+            super().re_init(config, self.level_seed + 1)
 
     def reset_to_level(self, level, editing=False):
         self.reset()
@@ -289,8 +286,9 @@ class BipedalWalkerAdversarialEnv(BipedalWalkerCustom):
         else:
             encoding = [float(x) for x in level[:-1]] + [int(level[-1])]
 
-        assert len(level) == len(self.level_params_vec) + 1, \
-            f'Level input is the wrong length.'
+        assert (
+            len(level) == len(self.level_params_vec) + 1
+        ), f"Level input is the wrong length."
 
         self.level_params_vec = encoding[:-1]
         self._update_params(self.level_params_vec)
@@ -302,11 +300,11 @@ class BipedalWalkerAdversarialEnv(BipedalWalkerCustom):
 
     @property
     def param_ranges(self):
-        if self.mode == 'easy':
+        if self.mode == "easy":
             param_ranges = PARAM_RANGES_EASY
-        elif self.mode == 'full':
+        elif self.mode == "full":
             param_ranges = PARAM_RANGES_FULL
-        elif self.mode == 'debug':
+        elif self.mode == "debug":
             param_ranges = PARAM_RANGES_DEBUG
         else:
             raise ValueError("Mode must be 'easy' or 'full'")
@@ -332,9 +330,10 @@ class BipedalWalkerAdversarialEnv(BipedalWalkerCustom):
         param_ranges = self.param_ranges
 
         rand_norm_params = np.random.rand(len(param_ranges))
-        self.level_params_vec = \
-            [rand_norm_params[i]*(param_range[1]-param_range[0]) + param_range[0] 
-                for i,param_range in enumerate(param_ranges.values())]
+        self.level_params_vec = [
+            rand_norm_params[i] * (param_range[1] - param_range[0]) + param_range[0]
+            for i, param_range in enumerate(param_ranges.values())
+        ]
         self._update_params(self.level_params_vec)
 
         self.level_seed = rand_int_seed()
@@ -352,7 +351,7 @@ class BipedalWalkerAdversarialEnv(BipedalWalkerCustom):
             val_range = param_ranges[idx + 1]
 
             action -= 1
-            value = ((action + 1)/2) * (val_range[1]-val_range[0]) + val_range[0]
+            value = ((action + 1) / 2) * (val_range[1] - val_range[0]) + val_range[0]
 
             # update the level vec
             self.level_params_vec[idx] = value
@@ -362,9 +361,9 @@ class BipedalWalkerAdversarialEnv(BipedalWalkerCustom):
         self._reset_env_config()
 
         obs = {
-            'image': self.level_params_vec,
-            'time_step': [self.adversary_step_count],
-            'random_z': self.generate_random_z()
+            "image": self.level_params_vec,
+            "time_step": [self.adversary_step_count],
+            "random_z": self.generate_random_z(),
         }
 
         return obs
@@ -384,16 +383,16 @@ class BipedalWalkerAdversarialEnv(BipedalWalkerCustom):
             edit_dirs = np.random.randint(0, 3, num_edits) - 1
 
             # Update level_params_vec
-            for a,d in zip(edit_actions, edit_dirs):
+            for a, d in zip(edit_actions, edit_dirs):
                 mutation_range = self.mutations[a]
                 if len(mutation_range) == 1:
-                    mutation = d*mutation_range[0]
+                    mutation = d * mutation_range[0]
                 elif len(mutation_range) == 2:
-                    mutation = d*np.random.uniform(*mutation_range)
+                    mutation = d * np.random.uniform(*mutation_range)
 
-                self.level_params_vec[a-1] = \
-                    np.clip(self.level_params_vec[a-1]+mutation,
-                            *PARAM_RANGES_FULL[a])
+                self.level_params_vec[a - 1] = np.clip(
+                    self.level_params_vec[a - 1] + mutation, *PARAM_RANGES_FULL[a]
+                )
 
             self.level_seed = rand_int_seed()
             self._update_params(self.level_params_vec)
@@ -405,13 +404,13 @@ class BipedalWalkerAdversarialEnv(BipedalWalkerCustom):
         # action will be between [-1,1]
         # this maps to a range, depending on the index
         param_ranges = self.param_ranges
-        val_range = param_ranges[self.adversary_step_count+1]
+        val_range = param_ranges[self.adversary_step_count + 1]
 
         if torch.is_tensor(action):
             action = action.item()
 
         # get unnormalized value from the action
-        value = ((action + 1)/2) * (val_range[1]-val_range[0]) + val_range[0]
+        value = ((action + 1) / 2) * (val_range[1] - val_range[0]) + val_range[0]
 
         # update the level vec
         self.level_params_vec[self.adversary_step_count] = value
@@ -422,48 +421,44 @@ class BipedalWalkerAdversarialEnv(BipedalWalkerCustom):
             self.level_seed = rand_int_seed()
             self._update_params(self.level_params_vec)
             self._reset_env_config()
-            done=True
+            done = True
         else:
-            done=False
+            done = False
 
         obs = {
-            'image': self.level_params_vec,
-            'time_step': [self.adversary_step_count],
-            'random_z': self.generate_random_z()
+            "image": self.level_params_vec,
+            "time_step": [self.adversary_step_count],
+            "random_z": self.generate_random_z(),
         }
 
         return obs, 0, done, {}
 
+
 class BipedalWalkerDev(BipedalWalker):
     def __init__(self, random_z_dim=5):
         super().__init__()
-        self.adversary_action_space = gym.spaces.Box(low=-1, high=1, shape=(1,), dtype=np.float32)
+        self.adversary_action_space = gym.spaces.Box(
+            low=-1, high=1, shape=(1,), dtype=np.float32
+        )
 
         self.adversary_max_steps = 5
         self.level_params_vec = [0]
-        self.adversary_ts_obs_space = \
-            gym.spaces.Box(
-                low=0, 
-                high=self.adversary_max_steps, 
-                shape=(1,), 
-                dtype='uint8')
-        self.adversary_randomz_obs_space = \
-            gym.spaces.Box(
-                low=0, 
-                high=1.0, 
-                shape=(random_z_dim,), 
-                dtype=np.float32)
-        self.adversary_image_obs_space = \
-            gym.spaces.Box(
-                low=0, 
-                high=10.0, 
-                shape=(len(self.level_params_vec),), 
-                dtype=np.float32)
-        self.adversary_observation_space = \
-            gym.spaces.Dict({
-                'image': self.adversary_image_obs_space, 
-                'time_step': self.adversary_ts_obs_space, 
-                'random_z': self.adversary_randomz_obs_space})
+        self.adversary_ts_obs_space = gym.spaces.Box(
+            low=0, high=self.adversary_max_steps, shape=(1,), dtype="uint8"
+        )
+        self.adversary_randomz_obs_space = gym.spaces.Box(
+            low=0, high=1.0, shape=(random_z_dim,), dtype=np.float32
+        )
+        self.adversary_image_obs_space = gym.spaces.Box(
+            low=0, high=10.0, shape=(len(self.level_params_vec),), dtype=np.float32
+        )
+        self.adversary_observation_space = gym.spaces.Dict(
+            {
+                "image": self.adversary_image_obs_space,
+                "time_step": self.adversary_ts_obs_space,
+                "random_z": self.adversary_randomz_obs_space,
+            }
+        )
 
     def reset_random(self):
         seed = rand_int_seed()
@@ -483,40 +478,36 @@ class BipedalWalkerDev(BipedalWalker):
     def get_complexity_info(self):
 
         complexity_info = {
-            'ground_roughness': 0,
+            "ground_roughness": 0,
         }
         return complexity_info
+
 
 class BipedalWalkerHC(BipedalWalkerHardcore):
     def __init__(self, random_z_dim=5, seed=0):
         super().__init__()
-        self.adversary_action_space = gym.spaces.Box(low=-1, high=1, shape=(1,), dtype=np.float32)
+        self.adversary_action_space = gym.spaces.Box(
+            low=-1, high=1, shape=(1,), dtype=np.float32
+        )
 
         self.adversary_max_steps = 5
         self.level_params_vec = [0]
-        self.adversary_ts_obs_space = \
-            gym.spaces.Box(
-                low=0, 
-                high=self.adversary_max_steps, 
-                shape=(1,), 
-                dtype='uint8')
-        self.adversary_randomz_obs_space = \
-            gym.spaces.Box(
-                low=0, 
-                high=1.0, 
-                shape=(random_z_dim,), 
-                dtype=np.float32)
-        self.adversary_image_obs_space = \
-            gym.spaces.Box(
-                low=0, 
-                high=10.0, 
-                shape=(len(self.level_params_vec),), 
-                dtype=np.float32)
-        self.adversary_observation_space = \
-            gym.spaces.Dict({
-                'image': self.adversary_image_obs_space, 
-                'time_step': self.adversary_ts_obs_space, 
-                'random_z': self.adversary_randomz_obs_space})
+        self.adversary_ts_obs_space = gym.spaces.Box(
+            low=0, high=self.adversary_max_steps, shape=(1,), dtype="uint8"
+        )
+        self.adversary_randomz_obs_space = gym.spaces.Box(
+            low=0, high=1.0, shape=(random_z_dim,), dtype=np.float32
+        )
+        self.adversary_image_obs_space = gym.spaces.Box(
+            low=0, high=10.0, shape=(len(self.level_params_vec),), dtype=np.float32
+        )
+        self.adversary_observation_space = gym.spaces.Dict(
+            {
+                "image": self.adversary_image_obs_space,
+                "time_step": self.adversary_ts_obs_space,
+                "random_z": self.adversary_randomz_obs_space,
+            }
+        )
         self.adversary_editor_action_space = gym.spaces.MultiDiscrete([3, 3])
 
     def reset_random(self):
@@ -537,57 +528,73 @@ class BipedalWalkerHC(BipedalWalkerHardcore):
     def get_complexity_info(self):
 
         complexity_info = {
-            'ground_roughness': 0,
+            "ground_roughness": 0,
         }
         return complexity_info
 
 
 class BipedalWalkerFull(BipedalWalkerAdversarialEnv):
-  def __init__(self, seed=0):
-    super().__init__(mode='full', seed=seed)
+    def __init__(self, seed=0):
+        super().__init__(mode="full", seed=seed)
+
 
 class BipedalWalkerEasy(BipedalWalkerAdversarialEnv):
-  def __init__(self, seed=0):
-    super().__init__(mode='easy', seed=seed)
+    def __init__(self, seed=0):
+        super().__init__(mode="easy", seed=seed)
+
 
 class BipedalWalkerDebug(BipedalWalkerDev):
-  def __init__(self, seed=0):
-    super().__init__()
+    def __init__(self, seed=0):
+        super().__init__()
+
 
 class BipedalWalkerPOET(BipedalWalkerAdversarialEnv):
-  def __init__(self, seed=0):
-    super().__init__(mode='full', poet=True, seed=seed)
+    def __init__(self, seed=0):
+        super().__init__(mode="full", poet=True, seed=seed)
+
 
 class BipedalWalkerEasyPOET(BipedalWalkerAdversarialEnv):
-  def __init__(self, seed=0):
-    super().__init__(mode='easy', poet=True, seed=seed)
+    def __init__(self, seed=0):
+        super().__init__(mode="easy", poet=True, seed=seed)
 
 
-if hasattr(__loader__, 'name'):
-  module_path = __loader__.name
-elif hasattr(__loader__, 'fullname'):
-  module_path = __loader__.fullname
+if hasattr(__loader__, "name"):
+    module_path = __loader__.name
+elif hasattr(__loader__, "fullname"):
+    module_path = __loader__.fullname
 
-gym_register(id='BipedalWalker-Adversarial-v0',
-             entry_point=module_path + ':BipedalWalkerFull',
-             max_episode_steps=2000)
+gym_register(
+    id="BipedalWalker-Adversarial-v0",
+    entry_point=module_path + ":BipedalWalkerFull",
+    max_episode_steps=2000,
+)
 
-gym_register(id='BipedalWalker-Adversarial-Easy-v0',
-             entry_point=module_path + ':BipedalWalkerEasy',
-             max_episode_steps=2000)
+gym_register(
+    id="BipedalWalker-Adversarial-Easy-v0",
+    entry_point=module_path + ":BipedalWalkerEasy",
+    max_episode_steps=2000,
+)
 
-gym_register(id='BipedalWalker-Vanilla-v0',
-             entry_point=module_path + ':BipedalWalkerDebug',
-             max_episode_steps=2000)
+gym_register(
+    id="BipedalWalker-Vanilla-v0",
+    entry_point=module_path + ":BipedalWalkerDebug",
+    max_episode_steps=2000,
+)
 
-gym_register(id='BipedalWalker-HC-v0',
-             entry_point=module_path + ':BipedalWalkerHC',
-             max_episode_steps=2000)
+gym_register(
+    id="BipedalWalker-HC-v0",
+    entry_point=module_path + ":BipedalWalkerHC",
+    max_episode_steps=2000,
+)
 
-gym_register(id='BipedalWalker-POET-v0',
-             entry_point=module_path + ':BipedalWalkerPOET',
-             max_episode_steps=2000)
+gym_register(
+    id="BipedalWalker-POET-v0",
+    entry_point=module_path + ":BipedalWalkerPOET",
+    max_episode_steps=2000,
+)
 
-gym_register(id='BipedalWalker-POET-Easy-v0',
-             entry_point=module_path + ':BipedalWalkerEasyPOET',
-             max_episode_steps=2000)
+gym_register(
+    id="BipedalWalker-POET-Easy-v0",
+    entry_point=module_path + ":BipedalWalkerEasyPOET",
+    max_episode_steps=2000,
+)

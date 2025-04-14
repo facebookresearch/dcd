@@ -11,19 +11,15 @@ env_list = []
 
 
 def register(env_id, entry_point, reward_threshold=0.95, max_episode_steps=None):
-  assert env_id.startswith("MultiGrid-")
-  if env_id in env_list:
-    del gym.envs.registry.env_specs[id]
-  else:
-    env_list.append(id)
+    assert env_id.startswith("MultiGrid-")
+    if env_id in env_list:
+        del gym.envs.registry.env_specs[id]
+    else:
+        env_list.append(id)
 
-  kwargs = dict(
-    id=env_id,
-    entry_point=entry_point,
-    reward_threshold=reward_threshold
-  )
+    kwargs = dict(id=env_id, entry_point=entry_point, reward_threshold=reward_threshold)
 
-  if max_episode_steps:
-    kwargs.update({'max_episode_steps':max_episode_steps})
+    if max_episode_steps:
+        kwargs.update({"max_episode_steps": max_episode_steps})
 
-  gym_register(**kwargs)
+    gym_register(**kwargs)

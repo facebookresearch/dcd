@@ -20,18 +20,13 @@ class FourRoomsEnv(MiniGridEnv):
     def __init__(self, agent_pos=None, goal_pos=None):
         self._agent_default_pos = agent_pos
         self._goal_default_pos = goal_pos
-        super().__init__(
-            grid_size=19, 
-            max_steps=100,
-            agent_view_size=5)
+        super().__init__(grid_size=19, max_steps=100, agent_view_size=5)
 
-        direction_obs_space = gym.spaces.Box(
-            low=0, high=3, shape=(1,), dtype='uint8')
+        direction_obs_space = gym.spaces.Box(low=0, high=3, shape=(1,), dtype="uint8")
 
-        self.observation_space = spaces.Dict({
-            'image': self.observation_space['image'],
-            'direction': direction_obs_space
-        })
+        self.observation_space = spaces.Dict(
+            {"image": self.observation_space["image"], "direction": direction_obs_space}
+        )
 
     def _gen_grid(self, width, height):
         # Create the grid
@@ -83,33 +78,30 @@ class FourRoomsEnv(MiniGridEnv):
         else:
             self.place_obj(Goal())
 
-        self.mission = 'Reach the goal'
+        self.mission = "Reach the goal"
 
     def step(self, action):
         obs, rewards, done, info = super().step(action)
 
-        del obs['mission']
-        obs['image'] = obs['image']
-        obs['direction'] = [self.agent_dir]
+        del obs["mission"]
+        obs["image"] = obs["image"]
+        obs["direction"] = [self.agent_dir]
 
         return obs, rewards, done, info
 
     def reset(self):
         obs = super().reset()
 
-        del obs['mission']
-        obs['image'] = obs['image']
-        obs['direction'] = [self.agent_dir]
+        del obs["mission"]
+        obs["image"] = obs["image"]
+        obs["direction"] = [self.agent_dir]
 
         return obs
 
 
-if hasattr(__loader__, 'name'):
-  module_path = __loader__.name
-elif hasattr(__loader__, 'fullname'):
-  module_path = __loader__.fullname
+if hasattr(__loader__, "name"):
+    module_path = __loader__.name
+elif hasattr(__loader__, "fullname"):
+    module_path = __loader__.fullname
 
-register(
-    id='MiniGrid-FourRooms-v0',
-    entry_point=module_path+':FourRoomsEnv'
-)
+register(id="MiniGrid-FourRooms-v0", entry_point=module_path + ":FourRoomsEnv")

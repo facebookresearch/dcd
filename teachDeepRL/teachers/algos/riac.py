@@ -1,5 +1,5 @@
 # Copyright (c) 2020 Flowers Team
-# 
+#
 # Licensed under the MIT License;
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -13,12 +13,14 @@ import copy
 from treelib import Tree
 from itertools import islice
 
-def proportional_choice(v, eps=0.):
+
+def proportional_choice(v, eps=0.0):
     if np.sum(v) == 0 or np.random.rand() < eps:
         return np.random.randint(np.size(v))
     else:
         probas = np.array(v) / np.sum(v)
         return np.where(np.random.multinomial(1, probas) == 1)[0][0]
+
 
 # A region is a subspace of the task space
 class Region(object):
@@ -38,9 +40,12 @@ class Region(object):
             need_split = True
         return need_split
 
+
 # Implementation of Robust Intelligent-Adaptive-Curiosity (with minor improvements)
-class RIAC():
-    def __init__(self, mins, maxs, seed=None, params=dict()):  # Example --> mins = [-1,-1], maxs = [1,1]
+class RIAC:
+    def __init__(
+        self, mins, maxs, seed=None, params=dict()
+    ):  # Example --> mins = [-1,-1], maxs = [1,1]
 
         self.seed = seed
         if not seed:
@@ -51,37 +56,66 @@ class RIAC():
         self.maxs = np.array(maxs)
 
         # Maximal number of (task, reward) pairs a region can hold before splitting
-        self.maxlen = 200 if "max_region_size" not in params else params['max_region_size']
+        self.maxlen = (
+            200 if "max_region_size" not in params else params["max_region_size"]
+        )
 
-        self.alp_window = self.maxlen if "alp_window_size" not in params else params['alp_window_size']
+        self.alp_window = (
+            self.maxlen
+            if "alp_window_size" not in params
+            else params["alp_window_size"]
+        )
 
         # Initialize Regions' tree
         self.tree = Tree()
         self.regions_bounds = [Box(self.mins, self.maxs, dtype=np.float32)]
-        self.regions_alp = [0.]
-        self.tree.create_node('root', 'root',
-                              data=Region(maxlen=self.maxlen,
-                                          r_t_pairs=[deque(maxlen=self.maxlen + 1), deque(maxlen=self.maxlen + 1)],
-                                          bounds=self.regions_bounds[-1], alp=self.regions_alp[-1]))
+        self.regions_alp = [0.0]
+        self.tree.create_node(
+            "root",
+            "root",
+            data=Region(
+                maxlen=self.maxlen,
+                r_t_pairs=[
+                    deque(maxlen=self.maxlen + 1),
+                    deque(maxlen=self.maxlen + 1),
+                ],
+                bounds=self.regions_bounds[-1],
+                alp=self.regions_alp[-1],
+            ),
+        )
         self.nb_dims = len(mins)
-        self.nb_split_attempts = 50 if "nb_split_attempts" not in params else params['nb_split_attempts']
+        self.nb_split_attempts = (
+            50 if "nb_split_attempts" not in params else params["nb_split_attempts"]
+        )
 
         # Whether task sampling uses parent and child regions (False) or only child regions (True)
-        self.sampling_in_leaves_only = False if "sampling_in_leaves_only" not in params else params["sampling_in_leaves_only"]
+        self.sampling_in_leaves_only = (
+            False
+            if "sampling_in_leaves_only" not in params
+            else params["sampling_in_leaves_only"]
+        )
 
         # Additional tricks to original RIAC, enforcing splitting rules
 
         # 1 - Minimum population required for both children when splitting --> set to 1 to cancel
-        self.minlen = self.maxlen / 20 if "min_reg_size" not in params else params['min_reg_size']
+        self.minlen = (
+            self.maxlen / 20 if "min_reg_size" not in params else params["min_reg_size"]
+        )
 
         # 2 - minimum children region size (compared to initial range of each dimension)
         # Set min_dims_range_ratio to 1/np.inf to cancel
         self.dims_ranges = self.maxs - self.mins
-        self.min_dims_range_ratio = 1/15 if "min_dims_range_ratio" not in params else params["min_dims_range_ratio"]
+        self.min_dims_range_ratio = (
+            1 / 15
+            if "min_dims_range_ratio" not in params
+            else params["min_dims_range_ratio"]
+        )
 
         # 3 - If after nb_split_attempts, no split is valid, flush oldest points of parent region
         # If 1- and 2- are canceled, this will be canceled since any split will be valid
-        self.discard_ratio = 1/4 if "discard_ratio" not in params else params["discard_ratio"]
+        self.discard_ratio = (
+            1 / 4 if "discard_ratio" not in params else params["discard_ratio"]
+        )
 
         # book-keeping
         self.sampled_tasks = []
@@ -94,7 +128,9 @@ class RIAC():
 
     def compute_alp(self, sub_region):
         if len(sub_region[0]) > 2:
-            cp_window = min(len(sub_region[0]), self.alp_window)  # not completely window
+            cp_window = min(
+                len(sub_region[0]), self.alp_window
+            )  # not completely window
             half = int(cp_window / 2)
             # print(str(cp_window) + 'and' + str(half))
             first_half = np.array(sub_region[0])[-cp_window:-half]
@@ -129,14 +165,26 @@ class RIAC():
                 bounds = [bounds1, bounds2]
                 valid_bounds = True
 
-                if np.any(bounds1.high - bounds1.low < self.dims_ranges * self.min_dims_range_ratio):
+                if np.any(
+                    bounds1.high - bounds1.low
+                    < self.dims_ranges * self.min_dims_range_ratio
+                ):
                     valid_bounds = False
-                if np.any(bounds2.high - bounds2.low < self.dims_ranges * self.min_dims_range_ratio):
+                if np.any(
+                    bounds2.high - bounds2.low
+                    < self.dims_ranges * self.min_dims_range_ratio
+                ):
                     valid_bounds = valid_bounds and False
 
                 # perform split in sub regions
-                sub_reg1 = [deque(maxlen=self.maxlen + 1), deque(maxlen=self.maxlen + 1)]
-                sub_reg2 = [deque(maxlen=self.maxlen + 1), deque(maxlen=self.maxlen + 1)]
+                sub_reg1 = [
+                    deque(maxlen=self.maxlen + 1),
+                    deque(maxlen=self.maxlen + 1),
+                ]
+                sub_reg2 = [
+                    deque(maxlen=self.maxlen + 1),
+                    deque(maxlen=self.maxlen + 1),
+                ]
                 for i, task in enumerate(reg.r_t_pairs[1]):
                     if bounds1.contains(task):
                         sub_reg1[1].append(task)
@@ -160,12 +208,29 @@ class RIAC():
         if is_split:
             # add new nodes to tree
             for i, (r_t_pairs, bounds) in enumerate(zip(best_sub_regions, best_bounds)):
-                self.tree.create_node(identifier=self.tree.size(), parent=nid,
-                                      data=Region(self.maxlen, r_t_pairs=r_t_pairs, bounds=bounds, alp=alp[i]))
+                self.tree.create_node(
+                    identifier=self.tree.size(),
+                    parent=nid,
+                    data=Region(
+                        self.maxlen, r_t_pairs=r_t_pairs, bounds=bounds, alp=alp[i]
+                    ),
+                )
         else:
             assert len(reg.r_t_pairs[0]) == (self.maxlen + 1)
-            reg.r_t_pairs[0] = deque(islice(reg.r_t_pairs[0], int(self.maxlen * self.discard_ratio), self.maxlen + 1))
-            reg.r_t_pairs[1] = deque(islice(reg.r_t_pairs[1], int(self.maxlen * self.discard_ratio), self.maxlen + 1))
+            reg.r_t_pairs[0] = deque(
+                islice(
+                    reg.r_t_pairs[0],
+                    int(self.maxlen * self.discard_ratio),
+                    self.maxlen + 1,
+                )
+            )
+            reg.r_t_pairs[1] = deque(
+                islice(
+                    reg.r_t_pairs[1],
+                    int(self.maxlen * self.discard_ratio),
+                    self.maxlen + 1,
+                )
+            )
 
         return is_split
 
@@ -178,10 +243,9 @@ class RIAC():
             for n in children:  # if task in region, task is in one sub-region
                 self.add_task_reward(n, task, reward)
 
-            need_split = reg.add(task, reward, children == []) # COPY ALL MODE
+            need_split = reg.add(task, reward, children == [])  # COPY ALL MODE
             if need_split:
                 self.nodes_to_split.append(nid)
-
 
     def update(self, task, reward):
         self.update_nb += 1
@@ -190,8 +254,10 @@ class RIAC():
         self.nodes_to_split = []
         self.nodes_to_recompute = []
         new_split = False
-        root = self.tree.get_node('root')
-        self.add_task_reward(root, task, reward)  # Will update self.nodes_to_split if needed
+        root = self.tree.get_node("root")
+        self.add_task_reward(
+            root, task, reward
+        )  # Will update self.nodes_to_split if needed
         assert len(self.nodes_to_split) <= 1
 
         # Split a node if needed
@@ -212,7 +278,11 @@ class RIAC():
             reg.alp = self.compute_alp(reg.r_t_pairs)
 
         # Collect regions data (regions' ALP and regions' (task, reward) pairs)
-        all_nodes = self.tree.all_nodes() if not self.sampling_in_leaves_only else self.tree.leaves()
+        all_nodes = (
+            self.tree.all_nodes()
+            if not self.sampling_in_leaves_only
+            else self.tree.leaves()
+        )
         self.regions_alp = []
         self.r_t_pairs = []
         for n in all_nodes:
@@ -233,7 +303,9 @@ class RIAC():
 
     def sample_task(self):
         mode = np.random.rand()
-        if mode < 0.1:  # "mode 3" (10%) -> sample on regions and then mutate lowest-performing task in region
+        if (
+            mode < 0.1
+        ):  # "mode 3" (10%) -> sample on regions and then mutate lowest-performing task in region
             if len(self.sampled_tasks) == 0:
                 self.sampled_tasks.append(self.sample_random_task())
             else:
@@ -244,10 +316,16 @@ class RIAC():
                 worst_task_idx = np.argmin(self.r_t_pairs[region_id][0])
 
                 # 3 - Mutate task by a small amount (using Gaussian centered on task, with 0.1 std)
-                task = np.random.normal(self.r_t_pairs[region_id][1][worst_task_idx].copy(), 0.1)
+                task = np.random.normal(
+                    self.r_t_pairs[region_id][1][worst_task_idx].copy(), 0.1
+                )
                 # clip to stay within region (add small epsilon to avoid falling in multiple regions)
-                task = np.clip(task, self.regions_bounds[region_id].low + 1e-5, self.regions_bounds[region_id].high - 1e-5)
-                
+                task = np.clip(
+                    task,
+                    self.regions_bounds[region_id].low + 1e-5,
+                    self.regions_bounds[region_id].high - 1e-5,
+                )
+
                 self.sampled_tasks.append(task)
 
         elif mode < 0.3:  # "mode 2" (20%) -> random task
@@ -260,10 +338,10 @@ class RIAC():
         return self.sampled_tasks[-1].astype(np.float32)
 
     def dump(self, dump_dict):
-        dump_dict['all_boxes'] = self.all_boxes
-        dump_dict['split_iterations'] = self.split_iterations
-        dump_dict['all_alps'] = self.all_alps
-        dump_dict['riac_params'] = self.hyperparams
+        dump_dict["all_boxes"] = self.all_boxes
+        dump_dict["split_iterations"] = self.split_iterations
+        dump_dict["all_alps"] = self.all_alps
+        dump_dict["riac_params"] = self.hyperparams
         return dump_dict
 
     @property

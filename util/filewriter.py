@@ -92,10 +92,9 @@ class FileWriter:
         formatter = logging.Formatter("%(message)s")
         self._logger = logging.getLogger("logs/out")
 
-        train_full_distribution = xp_args.get('train_full_distribution', False)
-        seed_buffer_size = xp_args.get('level_replay_seed_buffer_size', 0)
-        self.record_seed_diffs = \
-            train_full_distribution and seed_buffer_size > 0
+        train_full_distribution = xp_args.get("train_full_distribution", False)
+        seed_buffer_size = xp_args.get("level_replay_seed_buffer_size", 0)
+        self.record_seed_diffs = train_full_distribution and seed_buffer_size > 0
 
         self.seeds = None
         if not self.record_seed_diffs and seeds:
@@ -136,7 +135,7 @@ class FileWriter:
             meta="{base}/meta.json".format(base=self.basepath),
             level_weights="{base}/level_weights.csv".format(base=self.basepath),
             level_seeds="{base}/level_seeds.csv".format(base=self.basepath),
-            final_test_eval="{base}/final_test_eval.csv".format(base=self.basepath)
+            final_test_eval="{base}/final_test_eval.csv".format(base=self.basepath),
         )
 
         self._logger.info("Saving arguments to %s", self.paths["meta"])
@@ -160,8 +159,12 @@ class FileWriter:
         self._logger.info("Saving logs data to %s", self.paths["logs"])
         self._logger.info("Saving logs' fields to %s", self.paths["fields"])
         self.fieldnames = ["_tick", "_time"]
-        self.final_test_eval_fieldnames = ['num_test_seeds', 'mean_episode_return', 'median_episode_return']
-        self.level_seeds_fieldnames = ['new_seeds', 'new_seed_indices']
+        self.final_test_eval_fieldnames = [
+            "num_test_seeds",
+            "mean_episode_return",
+            "median_episode_return",
+        ]
+        self.level_seeds_fieldnames = ["new_seeds", "new_seed_indices"]
         if os.path.exists(self.paths["logs"]):
             self._logger.warning(
                 "Path to log file already exists. " "New data will be appended."
@@ -189,9 +192,13 @@ class FileWriter:
         self._levelweightsfile = open(self.paths["level_weights"], "a")
         self._levelweightswriter = csv.writer(self._levelweightsfile)
         self._levelseedsfile = open(self.paths["level_seeds"], "a")
-        self._levelseedswriter = csv.DictWriter(self._levelseedsfile, fieldnames=self.level_seeds_fieldnames)
+        self._levelseedswriter = csv.DictWriter(
+            self._levelseedsfile, fieldnames=self.level_seeds_fieldnames
+        )
         self._finaltestfile = open(self.paths["final_test_eval"], "a")
-        self._finaltestwriter = csv.DictWriter(self._finaltestfile, fieldnames=self.final_test_eval_fieldnames)
+        self._finaltestwriter = csv.DictWriter(
+            self._finaltestfile, fieldnames=self.final_test_eval_fieldnames
+        )
 
         if self.seeds and not self.record_seed_diffs:
             self._levelweightsfile.write("# %s\n" % ",".join(self.seeds))
@@ -233,16 +240,18 @@ class FileWriter:
             if self.seeds is None:
                 self.seeds = seeds.copy()
                 level_seed_log = {
-                    'new_seeds': " ".join([str(s) for s in self.seeds]),
-                    'new_seed_indices': " ".join([str(i) for i in range(len(self.seeds))]),
+                    "new_seeds": " ".join([str(s) for s in self.seeds]),
+                    "new_seed_indices": " ".join(
+                        [str(i) for i in range(len(self.seeds))]
+                    ),
                 }
             else:
                 new_seed_indices = np.nonzero(self.seeds - seeds)[0]
                 new_seeds = seeds[new_seed_indices]
                 self.seeds = seeds.copy()
                 level_seed_log = {
-                    'new_seeds': " ".join([str(s) for s in new_seeds]),
-                    'new_seed_indices': " ".join([str(i) for i in new_seed_indices]),
+                    "new_seeds": " ".join([str(s) for s in new_seeds]),
+                    "new_seed_indices": " ".join([str(i) for i in new_seed_indices]),
                 }
             self._levelseedswriter.writerow(level_seed_log)
             self._levelseedsfile.flush()

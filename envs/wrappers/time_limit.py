@@ -1,5 +1,5 @@
 # Copyright (c) OpenAI
-# 
+#
 # Licensed under the MIT License;
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -10,6 +10,7 @@
 # https://github.com/openai/gym/blob/master/gym/wrappers/time_limit.py
 
 import gym
+
 
 class TimeLimit(gym.Wrapper):
     def __init__(self, env, max_episode_steps=None):
@@ -22,12 +23,14 @@ class TimeLimit(gym.Wrapper):
         self._elapsed_steps = None
 
     def step(self, action):
-        assert self._elapsed_steps is not None, "Cannot call env.step() before calling reset()"
+        assert (
+            self._elapsed_steps is not None
+        ), "Cannot call env.step() before calling reset()"
         observation, reward, done, info = self.env.step(action)
         self._elapsed_steps += 1
         if self._elapsed_steps >= self._max_episode_steps:
-            info['truncated'] = not done
-            info['truncated_obs'] = observation
+            info["truncated"] = not done
+            info["truncated_obs"] = observation
             done = True
 
         return observation, reward, done, info

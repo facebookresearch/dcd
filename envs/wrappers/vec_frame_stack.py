@@ -24,18 +24,22 @@ class VecFrameStack(VecEnvWrapper):
         low = np.repeat(wos.low, self.nstack, axis=-1)
         high = np.repeat(wos.high, self.nstack, axis=-1)
         self.stackedobs = np.zeros((venv.num_envs,) + low.shape, low.dtype)
-        observation_space = spaces.Box(low=low, high=high, dtype=venv.observation_space.dtype)
+        observation_space = spaces.Box(
+            low=low, high=high, dtype=venv.observation_space.dtype
+        )
         VecEnvWrapper.__init__(self, venv, observation_space=observation_space)
 
     def step_wait(self):
         obs, rews, news, infos = self.venv.step_wait()
         if self.obs_key:
             obs = obs[obs_key]
-        self.stackedobs = np.roll(self.stackedobs, shift=-self.n_frame_channels, axis=-1)
-        for (i, new) in enumerate(news):
+        self.stackedobs = np.roll(
+            self.stackedobs, shift=-self.n_frame_channels, axis=-1
+        )
+        for i, new in enumerate(news):
             if new:
                 self.stackedobs[i] = 0
-        self.stackedobs[..., -obs.shape[-1]:] = obs
+        self.stackedobs[..., -obs.shape[-1] :] = obs
         return self.stackedobs, rews, news, infos
 
     def reset(self, seed=None, index=None):
@@ -44,14 +48,14 @@ class VecFrameStack(VecEnvWrapper):
             if self.obs_key:
                 obs = obs[obs_key]
             self.stackedobs[index] = 0
-            self.stackedobs[index,...,-obs.shape[-1]:] = obs
-            return self.stackedobs[index,:]
+            self.stackedobs[index, ..., -obs.shape[-1] :] = obs
+            return self.stackedobs[index, :]
         else:
             obs = self.venv.reset()
             if self.obs_key:
                 obs = obs[obs_key]
             self.stackedobs[...] = 0
-            self.stackedobs[..., -obs.shape[-1]:] = obs
+            self.stackedobs[..., -obs.shape[-1] :] = obs
             return self.stackedobs
 
     def reset_agent(self):
@@ -59,7 +63,7 @@ class VecFrameStack(VecEnvWrapper):
         if self.obs_key:
             obs = obs[obs_key]
         self.stackedobs[...] = 0
-        self.stackedobs[..., -obs.shape[-1]:] = obs
+        self.stackedobs[..., -obs.shape[-1] :] = obs
         return self.stackedobs
 
     def reset_random(self):
@@ -67,5 +71,5 @@ class VecFrameStack(VecEnvWrapper):
         if self.obs_key:
             obs = obs[obs_key]
         self.stackedobs[...] = 0
-        self.stackedobs[..., -obs.shape[-1]:] = obs
+        self.stackedobs[..., -obs.shape[-1] :] = obs
         return self.stackedobs

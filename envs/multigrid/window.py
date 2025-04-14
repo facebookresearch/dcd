@@ -13,9 +13,10 @@ import numpy as np
 try:
     import matplotlib.pyplot as plt
 except:
-    print('To display the environment in a window, please install matplotlib, eg:')
-    print('pip3 install --user matplotlib')
+    print("To display the environment in a window, please install matplotlib, eg:")
+    print("pip3 install --user matplotlib")
     sys.exit(-1)
+
 
 class Window:
     """
@@ -32,7 +33,7 @@ class Window:
 
         # Show the env name in the window title
         self.fig.canvas.manager.set_window_title(title)
-        plt.axis('off')
+        plt.axis("off")
 
         # Turn off x/y axis numbering/ticks
         # self.ax.set_xticks([], [])
@@ -44,7 +45,7 @@ class Window:
         def close_handler(evt):
             self.closed = True
 
-        self.fig.canvas.mpl_connect('close_event', close_handler)
+        self.fig.canvas.mpl_connect("close_event", close_handler)
 
     def show_img(self, img):
         """
@@ -53,7 +54,7 @@ class Window:
 
         # Show the first image of the environment
         if self.imshow_obj is None:
-            self.imshow_obj = self.ax.imshow(img, interpolation='bilinear')
+            self.imshow_obj = self.ax.imshow(img, interpolation="bilinear")
 
         self.imshow_obj.set_data(img)
         self.fig.canvas.draw()
@@ -75,7 +76,7 @@ class Window:
         """
 
         # Keyboard handler
-        self.fig.canvas.mpl_connect('key_press_event', key_handler)
+        self.fig.canvas.mpl_connect("key_press_event", key_handler)
 
     def show(self, block=True):
         """

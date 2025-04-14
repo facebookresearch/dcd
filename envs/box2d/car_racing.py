@@ -1,5 +1,5 @@
 # Copyright (c) OpenAI
-# 
+#
 # Licensed under the MIT License;
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -133,7 +133,7 @@ class CarRacing(gym.Env, EzPickle):
 
     def __init__(self, verbose=0, **kwargs):
         EzPickle.__init__(self)
-        self.seed(kwargs.get('seed', None))
+        self.seed(kwargs.get("seed", None))
         self.contactListener_keepref = FrictionDetector(self)
         self.world = Box2D.b2World((0, 0), contactListener=self.contactListener_keepref)
         self.viewer = None
@@ -386,7 +386,7 @@ class CarRacing(gym.Env, EzPickle):
             self.car.steer(-action[0])
             self.car.gas(action[1])
             self.car.brake(action[2])
-            
+
         self.car.step(1.0 / FPS)
         self.world.Step(1.0 / FPS, 6 * 30, 2 * 30)
         self.t += 1.0 / FPS
@@ -407,7 +407,7 @@ class CarRacing(gym.Env, EzPickle):
             x, y = self.car.hull.position
             if abs(x) > PLAYFIELD or abs(y) > PLAYFIELD:
                 done = True
-                step_reward = -100   
+                step_reward = -100
 
         return self.state, step_reward, done, {}
 
@@ -432,7 +432,7 @@ class CarRacing(gym.Env, EzPickle):
             return  # reset() not called yet
 
         # Animate zoom first second:
-        zoom = ZOOM*SCALE
+        zoom = ZOOM * SCALE
         scroll_x = self.car.hull.position[0]
         scroll_y = self.car.hull.position[1]
         angle = -self.car.hull.angle
@@ -668,11 +668,13 @@ if __name__ == "__main__":
                 break
     env.close()
 
-if hasattr(__loader__, 'name'):
-  module_path = __loader__.name
-elif hasattr(__loader__, 'fullname'):
-  module_path = __loader__.fullname
+if hasattr(__loader__, "name"):
+    module_path = __loader__.name
+elif hasattr(__loader__, "fullname"):
+    module_path = __loader__.fullname
 
-gym_register(id='CarRacing-Vanilla-v0', 
-    entry_point=module_path + ':CarRacing',
-    max_episode_steps=1000)
+gym_register(
+    id="CarRacing-Vanilla-v0",
+    entry_point=module_path + ":CarRacing",
+    max_episode_steps=1000,
+)

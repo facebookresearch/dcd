@@ -9,27 +9,31 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .distributions import Categorical  
+from .distributions import Categorical
 from .common import *
+
 
 class MultigridNetwork(DeviceAwareModule):
     """
-    Actor-Critic module 
+    Actor-Critic module
     """
-    def __init__(self, 
-        observation_space, 
-        action_space, 
+
+    def __init__(
+        self,
+        observation_space,
+        action_space,
         actor_fc_layers=(32, 32),
         value_fc_layers=(32, 32),
         conv_filters=16,
-        conv_kernel_size=3, 
+        conv_kernel_size=3,
         scalar_fc=5,
         scalar_dim=4,
         random_z_dim=0,
         xy_dim=0,
-        recurrent_arch='lstm',
-        recurrent_hidden_size=256, 
-        random=False):        
+        recurrent_arch="lstm",
+        recurrent_hidden_size=256,
+        random=False,
+    ):
         super(MultigridNetwork, self).__init__()
 
         self.random = random
@@ -37,24 +41,28 @@ class MultigridNetwork(DeviceAwareModule):
         num_actions = action_space.n
 
         # Image embeddings
-        obs_shape = observation_space['image'].shape
-        m = obs_shape[-2] # x input dim
-        n = obs_shape[-1] # y input dim
-        c = obs_shape[-3] # channel input dim
+        obs_shape = observation_space["image"].shape
+        m = obs_shape[-2]  # x input dim
+        n = obs_shape[-1]  # y input dim
+        c = obs_shape[-3]  # channel input dim
 
         self.image_conv = nn.Sequential(
-            Conv2d_tf(3, conv_filters, kernel_size=conv_kernel_size, stride=1, padding='valid'),
+            Conv2d_tf(
+                3, conv_filters, kernel_size=conv_kernel_size, stride=1, padding="valid"
+            ),
             nn.Flatten(),
-            nn.ReLU()
+            nn.ReLU(),
         )
-        self.image_embedding_size = (n-conv_kernel_size+1)*(m-conv_kernel_size+1)*conv_filters
+        self.image_embedding_size = (
+            (n - conv_kernel_size + 1) * (m - conv_kernel_size + 1) * conv_filters
+        )
         self.preprocessed_input_size = self.image_embedding_size
 
         # x, y positional embeddings
         self.xy_embed = None
         self.xy_dim = xy_dim
         if xy_dim:
-            self.preprocessed_input_size += 2*xy_dim
+            self.preprocessed_input_size += 2 * xy_dim
 
         # Scalar embedding
         self.scalar_embed = None
@@ -70,21 +78,26 @@ class MultigridNetwork(DeviceAwareModule):
         self.rnn = None
         if recurrent_arch:
             self.rnn = RNN(
-                input_size=self.preprocessed_input_size, 
+                input_size=self.preprocessed_input_size,
                 hidden_size=recurrent_hidden_size,
-                arch=recurrent_arch)
+                arch=recurrent_arch,
+            )
             self.base_output_size = recurrent_hidden_size
 
         # Policy head
         self.actor = nn.Sequential(
-            make_fc_layers_with_hidden_sizes(actor_fc_layers, input_size=self.base_output_size),
-            Categorical(actor_fc_layers[-1], num_actions)
+            make_fc_layers_with_hidden_sizes(
+                actor_fc_layers, input_size=self.base_output_size
+            ),
+            Categorical(actor_fc_layers[-1], num_actions),
         )
 
         # Value head
         self.critic = nn.Sequential(
-            make_fc_layers_with_hidden_sizes(value_fc_layers, input_size=self.base_output_size),
-            init_(nn.Linear(value_fc_layers[-1], 1))
+            make_fc_layers_with_hidden_sizes(
+                value_fc_layers, input_size=self.base_output_size
+            ),
+            init_(nn.Linear(value_fc_layers[-1], 1)),
         )
 
         apply_init_(self.modules())
@@ -108,23 +121,23 @@ class MultigridNetwork(DeviceAwareModule):
 
     def _forward_base(self, inputs, rnn_hxs, masks):
         # Unpack input key values
-        image = inputs.get('image')
+        image = inputs.get("image")
 
-        scalar = inputs.get('direction')
+        scalar = inputs.get("direction")
         if scalar is None:
-            scalar = inputs.get('time_step')
+            scalar = inputs.get("time_step")
 
-        x = inputs.get('x')
-        y = inputs.get('y')
+        x = inputs.get("x")
+        y = inputs.get("y")
 
-        in_z = inputs.get('random_z', torch.tensor([], device=self.device))
+        in_z = inputs.get("random_z", torch.tensor([], device=self.device))
 
         in_image = self.image_conv(image)
 
         if self.xy_embed:
             x = one_hot(self.xy_dim, x, device=self.device)
             y = one_hot(self.xy_dim, y, device=self.device)
-            in_x = self.xy_embed(x) 
+            in_x = self.xy_embed(x)
             in_y = self.xy_embed(y)
         else:
             in_x = torch.tensor([], device=self.device)
@@ -147,9 +160,9 @@ class MultigridNetwork(DeviceAwareModule):
 
     def act(self, inputs, rnn_hxs, masks, deterministic=False):
         if self.random:
-            B = inputs['image'].shape[0]
-            action = torch.zeros((B,1), dtype=torch.int64, device=self.device)
-            values = torch.zeros((B,1), device=self.device)
+            B = inputs["image"].shape[0]
+            action = torch.zeros((B, 1), dtype=torch.int64, device=self.device)
+            values = torch.zeros((B, 1), device=self.device)
             action_log_dist = torch.ones(B, self.action_space.n, device=self.device)
             for b in range(B):
                 action[b] = self.action_space.sample()
@@ -174,7 +187,9 @@ class MultigridNetwork(DeviceAwareModule):
         core_features, rnn_hxs = self._forward_base(inputs, rnn_hxs, masks)
         return self.critic(core_features)
 
-    def evaluate_actions(self, inputs, rnn_hxs, masks, action, return_policy_logits=False):
+    def evaluate_actions(
+        self, inputs, rnn_hxs, masks, action, return_policy_logits=False
+    ):
         core_features, rnn_hxs = self._forward_base(inputs, rnn_hxs, masks)
 
         dist = self.actor(core_features)
@@ -185,5 +200,5 @@ class MultigridNetwork(DeviceAwareModule):
 
         if return_policy_logits:
             return value, action_log_probs, dist_entropy, rnn_hxs, dist
-        
+
         return value, action_log_probs, dist_entropy, rnn_hxs

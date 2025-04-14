@@ -6,8 +6,9 @@
 
 from .formula1 import *
 
+
 def get_track(name):
-	if isinstance(name, str):
-		return getattr(sys.modules[__name__], name, None)
-	else:
-		return None
+    if isinstance(name, str):
+        return getattr(sys.modules[__name__], name, None)
+    else:
+        return None

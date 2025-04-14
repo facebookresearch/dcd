@@ -8,4 +8,7 @@ from .multigrid_models import MultigridNetwork
 from .multigrid_global_critic_models import MultigridGlobalCriticNetwork
 from .car_racing_models import CarRacingNetwork, CarRacingBezierAdversaryEnvNetwork
 from .walker_models import BipedalWalkerStudentPolicy, BipedalWalkerAdversaryPolicy
-from .recurrent_walker_models import BipedalWalkerRecurrentStudentPolicy, BipedalWalkerRecurrentAdversaryPolicy
+from .recurrent_walker_models import (
+    BipedalWalkerRecurrentStudentPolicy,
+    BipedalWalkerRecurrentAdversaryPolicy,
+)

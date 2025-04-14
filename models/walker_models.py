@@ -1,5 +1,5 @@
 # Copyright (c) 2017 Ilya Kostrikov
-# 
+#
 # Licensed under the MIT License;
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -21,6 +21,7 @@ from .common import *
 from torch.distributions.normal import Normal
 from .popart import PopArt
 
+
 # Necessary for my KFAC implementation.
 class AddBias(nn.Module):
     def __init__(self, bias):
@@ -35,6 +36,7 @@ class AddBias(nn.Module):
 
         return x + bias
 
+
 # Normal
 class FixedNormal(torch.distributions.Normal):
     def log_probs(self, actions):
@@ -46,12 +48,14 @@ class FixedNormal(torch.distributions.Normal):
     def mode(self):
         return self.mean
 
+
 class DiagGaussian(DeviceAwareModule):
     def __init__(self, num_inputs, num_outputs):
         super(DiagGaussian, self).__init__()
 
-        init_ = lambda m: init(m, nn.init.orthogonal_, lambda x: nn.init.
-                               constant_(x, 0))
+        init_ = lambda m: init(
+            m, nn.init.orthogonal_, lambda x: nn.init.constant_(x, 0)
+        )
 
         self.fc_mean = init_(nn.Linear(num_inputs, num_outputs))
         self.logstd = AddBias(torch.zeros(num_outputs))
@@ -66,6 +70,7 @@ class DiagGaussian(DeviceAwareModule):
 
         action_logstd = self.logstd(zeros)
         return FixedNormal(action_mean, action_logstd.exp())
+
 
 class FixedCategorical(torch.distributions.Categorical):
     def sample(self):
@@ -83,15 +88,14 @@ class FixedCategorical(torch.distributions.Categorical):
     def mode(self):
         return self.probs.argmax(dim=-1, keepdim=True)
 
+
 class Categorical(nn.Module):
     def __init__(self, num_inputs, num_outputs):
         super(Categorical, self).__init__()
 
         init_ = lambda m: init(
-            m,
-            nn.init.orthogonal_,
-            lambda x: nn.init.constant_(x, 0),
-            gain=0.01)
+            m, nn.init.orthogonal_, lambda x: nn.init.constant_(x, 0), gain=0.01
+        )
 
         self.linear = init_(nn.Linear(num_inputs, num_outputs))
 
@@ -99,19 +103,23 @@ class Categorical(nn.Module):
         x = self.linear(x)
         return FixedCategorical(logits=x)
 
+
 def init(module, weight_init, bias_init, gain=1):
     weight_init(module.weight.data, gain=gain)
     bias_init(module.bias.data)
     return module
 
+
 ## Policy from https://github.com/ikostrikov/pytorch-a2c-ppo-acktr-gail/blob/master/a2c_ppo_acktr/model.py
+
 
 class Flatten(nn.Module):
     def forward(self, x):
         return x.view(x.size(0), -1)
 
+
 class BipedalWalkerStudentPolicy(DeviceAwareModule):
-    def __init__(self, obs_shape, action_space, recurrent=False,base_kwargs=None):
+    def __init__(self, obs_shape, action_space, recurrent=False, base_kwargs=None):
         super(BipedalWalkerStudentPolicy, self).__init__()
 
         if base_kwargs is None:
@@ -123,8 +131,8 @@ class BipedalWalkerStudentPolicy(DeviceAwareModule):
         self.dist = DiagGaussian(self.base.output_size, num_outputs)
 
         if recurrent:
-            RNN = namedtuple("RNN", 'arch')
-            self.rnn = RNN('gru')
+            RNN = namedtuple("RNN", "arch")
+            self.rnn = RNN("gru")
 
     @property
     def is_recurrent(self):
@@ -136,7 +144,9 @@ class BipedalWalkerStudentPolicy(DeviceAwareModule):
         return self.base.recurrent_hidden_state_size
 
     def forward(self, inputs):
-        value, action, action_log_probs, rnn_hxs = self.act(inputs, rnn_hxs=None, masks=None, deterministic=False)
+        value, action, action_log_probs, rnn_hxs = self.act(
+            inputs, rnn_hxs=None, masks=None, deterministic=False
+        )
         return action
 
     def act(self, inputs, rnn_hxs, masks, deterministic=False):
@@ -157,7 +167,9 @@ class BipedalWalkerStudentPolicy(DeviceAwareModule):
         value, _, _ = self.base(inputs, rnn_hxs, masks)
         return value
 
-    def evaluate_actions(self, inputs, rnn_hxs, masks, action, return_policy_logits=False):
+    def evaluate_actions(
+        self, inputs, rnn_hxs, masks, action, return_policy_logits=False
+    ):
         value, actor_features, rnn_hxs = self.base(inputs, rnn_hxs, masks)
         dist = self.dist(actor_features)
 
@@ -171,7 +183,14 @@ class BipedalWalkerStudentPolicy(DeviceAwareModule):
 
 
 class BipedalWalkerAdversaryPolicy(DeviceAwareModule):
-    def __init__(self, observation_space, action_space, editor=False, random=False, base_kwargs=None):
+    def __init__(
+        self,
+        observation_space,
+        action_space,
+        editor=False,
+        random=False,
+        base_kwargs=None,
+    ):
         super(BipedalWalkerAdversaryPolicy, self).__init__()
 
         if base_kwargs is None:
@@ -179,10 +198,10 @@ class BipedalWalkerAdversaryPolicy(DeviceAwareModule):
 
         self.random = random
 
-        self.design_dim = observation_space['image'].shape[0]
-        self.random_z_dim = observation_space['random_z'].shape[0]
+        self.design_dim = observation_space["image"].shape[0]
+        self.random_z_dim = observation_space["random_z"].shape[0]
 
-        obs_dim = self.design_dim + self.random_z_dim  + 1
+        obs_dim = self.design_dim + self.random_z_dim + 1
 
         self.base = MLPBase(obs_dim, **base_kwargs)
 
@@ -190,7 +209,9 @@ class BipedalWalkerAdversaryPolicy(DeviceAwareModule):
 
         self.action_dim = action_space.shape[0]
         if self.editor:
-            self.dist = [Categorical(self.base.output_size, x) for x in action_space.nvec]
+            self.dist = [
+                Categorical(self.base.output_size, x) for x in action_space.nvec
+            ]
             self.action_space = action_space
         else:
             self.dist = DiagGaussian(self.base.output_size, self.action_dim)
@@ -205,7 +226,9 @@ class BipedalWalkerAdversaryPolicy(DeviceAwareModule):
         return self.base.recurrent_hidden_state_size
 
     def preprocess(self, inputs):
-        obs = torch.cat([inputs['image'], inputs['random_z'], inputs['time_step']], axis=1)
+        obs = torch.cat(
+            [inputs["image"], inputs["random_z"], inputs["time_step"]], axis=1
+        )
         return obs
 
     def act(self, inputs, rnn_hxs, masks, deterministic=False):
@@ -216,12 +239,20 @@ class BipedalWalkerAdversaryPolicy(DeviceAwareModule):
             if self.editor:
                 B = inputs.shape[0]
                 action = torch.zeros((B, 2), dtype=torch.int64, device=self.device)
-                action_log_dist = torch.ones(B, self.action_space.nvec[0] + self.action_space.nvec[1], device=self.device)
+                action_log_dist = torch.ones(
+                    B,
+                    self.action_space.nvec[0] + self.action_space.nvec[1],
+                    device=self.device,
+                )
                 for b in range(B):
                     action[b] = torch.tensor(self.action_space.sample()).to(self.device)
             else:
-                action = torch.tensor(np.random.uniform(-1,1, inputs.shape[0]), device=self.device).reshape(-1,1)
-                action_log_dist = torch.ones(inputs.shape[0], self.action_dim, device=self.device)
+                action = torch.tensor(
+                    np.random.uniform(-1, 1, inputs.shape[0]), device=self.device
+                ).reshape(-1, 1)
+                action_log_dist = torch.ones(
+                    inputs.shape[0], self.action_dim, device=self.device
+                )
             values = torch.zeros(inputs.shape[0], 1, device=self.device)
             return values, action, action_log_dist, rnn_hxs
 
@@ -269,9 +300,9 @@ class NNBase(nn.Module):
         if recurrent:
             self.rnn = nn.GRU(recurrent_input_size, hidden_size)
             for name, param in self.rnn.named_parameters():
-                if 'bias' in name:
+                if "bias" in name:
                     nn.init.constant_(param, 0)
-                elif 'weight' in name:
+                elif "weight" in name:
                     nn.init.orthogonal_(param)
 
     @property
@@ -306,11 +337,7 @@ class NNBase(nn.Module):
 
             # Let's figure out which steps in the sequence have a zero for any agent
             # We will always assume t=0 has a zero in it as that makes the logic cleaner
-            has_zeros = ((masks[1:] == 0.0) \
-                            .any(dim=-1)
-                            .nonzero()
-                            .squeeze()
-                            .cpu())
+            has_zeros = (masks[1:] == 0.0).any(dim=-1).nonzero().squeeze().cpu()
 
             # +1 to correct the masks[1:]
             if has_zeros.dim() == 0:
@@ -331,8 +358,8 @@ class NNBase(nn.Module):
                 end_idx = has_zeros[i + 1]
 
                 rnn_scores, hxs = self.rnn(
-                    x[start_idx:end_idx],
-                    hxs * masks[start_idx].view(1, -1, 1))
+                    x[start_idx:end_idx], hxs * masks[start_idx].view(1, -1, 1)
+                )
 
                 outputs.append(rnn_scores)
 
@@ -345,6 +372,7 @@ class NNBase(nn.Module):
 
         return x, hxs
 
+
 class MLPBase(NNBase):
     def __init__(self, num_inputs, recurrent=False, hidden_size=64):
         super(MLPBase, self).__init__(recurrent, num_inputs, hidden_size)
@@ -352,16 +380,23 @@ class MLPBase(NNBase):
         if recurrent:
             num_inputs = hidden_size
 
-        init_ = lambda m: init(m, nn.init.orthogonal_, lambda x: nn.init.
-                               constant_(x, 0), np.sqrt(2))
+        init_ = lambda m: init(
+            m, nn.init.orthogonal_, lambda x: nn.init.constant_(x, 0), np.sqrt(2)
+        )
 
         self.actor = nn.Sequential(
-            init_(nn.Linear(num_inputs, hidden_size)), nn.Tanh(),
-            init_(nn.Linear(hidden_size, hidden_size)), nn.Tanh())
+            init_(nn.Linear(num_inputs, hidden_size)),
+            nn.Tanh(),
+            init_(nn.Linear(hidden_size, hidden_size)),
+            nn.Tanh(),
+        )
 
         self.critic = nn.Sequential(
-            init_(nn.Linear(num_inputs, hidden_size)), nn.Tanh(),
-            init_(nn.Linear(hidden_size, hidden_size)), nn.Tanh())
+            init_(nn.Linear(num_inputs, hidden_size)),
+            nn.Tanh(),
+            init_(nn.Linear(hidden_size, hidden_size)),
+            nn.Tanh(),
+        )
 
         self.critic_linear = init_(nn.Linear(hidden_size, 1))
 

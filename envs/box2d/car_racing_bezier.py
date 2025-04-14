@@ -1,5 +1,5 @@
 # Copyright (c) OpenAI
-# 
+#
 # Licensed under the MIT License;
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -79,14 +79,14 @@ class FrictionDetector(contactListener):
         u2 = contact.fixtureB.body.userData
         index = -1
         if u1 and "tile" in u1:
-            if "road_friction" in u1['tile'].__dict__:
-                tile = u1['tile']
-                index = u1['index']
+            if "road_friction" in u1["tile"].__dict__:
+                tile = u1["tile"]
+                index = u1["index"]
                 obj = u2
         if u2 and "tile" in u2:
-            if "road_friction" in u2['tile'].__dict__:
-                tile = u2['tile']
-                index = u2['index']
+            if "road_friction" in u2["tile"].__dict__:
+                tile = u2["tile"]
+                index = u2["index"]
                 obj = u1
         if not tile:
             return
@@ -112,17 +112,16 @@ class FrictionDetector(contactListener):
     def _eval_tile_index(self, index):
         goal_bin = self.env.goal_bin
         track_len = len(self.env.track)
-        goal_step = track_len/(self.env.num_goal_bins)
+        goal_step = track_len / (self.env.num_goal_bins)
 
         MIN_DISTANCE_TO_GO = 10
         distance = track_len - index
-        tile_bin = np.floor(distance/goal_step)
+        tile_bin = np.floor(distance / goal_step)
 
         # print('in tile bin, index', tile_bin, index, flush=True)
         if goal_bin == 0 and distance < MIN_DISTANCE_TO_GO:
             self.env.goal_reached = False
-        elif goal_bin == self.env.num_goal_bins - 1 \
-            and index < MIN_DISTANCE_TO_GO:
+        elif goal_bin == self.env.num_goal_bins - 1 and index < MIN_DISTANCE_TO_GO:
             self.env.goal_reached = False
         elif tile_bin == goal_bin:
             self.env.goal_reached = True
@@ -135,13 +134,14 @@ class CarRacingBezier(gym.Env, EzPickle):
         "video.frames_per_second": FPS,
     }
 
-    def __init__(self,
+    def __init__(
+        self,
         n_control_points=12,
         track_name=None,
-        bezier=True, 
-        show_borders=True, 
+        bezier=True,
+        show_borders=True,
         show_indicators=True,
-        birdseye=False, 
+        birdseye=False,
         seed=None,
         fixed_environment=False,
         animate_zoom=False,
@@ -150,12 +150,13 @@ class CarRacingBezier(gym.Env, EzPickle):
         sparse_rewards=False,
         clip_reward=None,
         num_goal_bins=24,
-        verbose=0):
+        verbose=0,
+    ):
         EzPickle.__init__(self)
 
         self.level_seed = seed
         self.seed(seed)
-        
+
         self.n_control_points = n_control_points
         self.bezier = bezier
         self.fixed_environment = fixed_environment
@@ -194,7 +195,7 @@ class CarRacingBezier(gym.Env, EzPickle):
         else:
             self.playfield = PLAYFIELD
             self.full_zoom = 0.25
-        
+
         self.fd_tile = fixtureDef(
             shape=polygonShape(vertices=[(0, 0), (1, 0), (1, -1), (0, -1)])
         )
@@ -211,7 +212,7 @@ class CarRacingBezier(gym.Env, EzPickle):
 
         # Create goal for sparse rewards
         self.sparse_rewards = sparse_rewards
-        self.num_goal_bins = num_goal_bins # 0-indexed
+        self.num_goal_bins = num_goal_bins  # 0-indexed
         self.goal_bin = None
         if sparse_rewards:
             self.set_goal()
@@ -224,7 +225,7 @@ class CarRacingBezier(gym.Env, EzPickle):
     def get_complexity_info(self):
         if self.complexity_info is None:
             # recompute
-            points = ((x,y) for _,_,x,y in self.track)
+            points = ((x, y) for _, _, x, y in self.track)
             return geo_complexity.complexity(points)
 
         return self.complexity_info
@@ -234,7 +235,7 @@ class CarRacingBezier(gym.Env, EzPickle):
             goal_bin = self.goal_bin
 
         if goal_bin is None:
-            self.goal_bin = self.np_random.randint(1,self.num_goal_bins)
+            self.goal_bin = self.np_random.randint(1, self.num_goal_bins)
         else:
             self.goal_bin = goal_bin
 
@@ -245,7 +246,7 @@ class CarRacingBezier(gym.Env, EzPickle):
             return
 
         for t in self.road:
-            t.userData = t.userData['tile']
+            t.userData = t.userData["tile"]
             self.world.DestroyBody(t)
 
         self.road = []
@@ -255,8 +256,8 @@ class CarRacingBezier(gym.Env, EzPickle):
     def _create_track(self, control_points=None, show_borders=None):
         if self.bezier:
             return self._create_track_bezier(
-                control_points=control_points, 
-                show_borders=show_borders)
+                control_points=control_points, show_borders=show_borders
+            )
         else:
             t = 0
             reset_random = False
@@ -267,8 +268,8 @@ class CarRacingBezier(gym.Env, EzPickle):
                     break
 
                 success = self._create_track_polar(
-                    control_points=control_points,
-                    show_borders=show_borders)
+                    control_points=control_points, show_borders=show_borders
+                )
                 if success:
                     return success
 
@@ -276,8 +277,7 @@ class CarRacingBezier(gym.Env, EzPickle):
             t = 0
             while True:
                 t += 1
-                success = self._create_track_polar(
-                    show_borders=show_borders)
+                success = self._create_track_polar(show_borders=show_borders)
                 if success:
                     return success
 
@@ -293,32 +293,34 @@ class CarRacingBezier(gym.Env, EzPickle):
 
         if self.preloaded_track is not None:
             points = self.preloaded_track.xy
-            x,y = zip(*points)
+            x, y = zip(*points)
         elif control_points is not None:
             a = np.array(control_points)
             x, y, _ = bezier.get_bezier_curve(a=a, rad=0.2, edgy=0.2, numpoints=40)
             self.track_data = a
         else:
-            a = bezier.get_random_points(n=self.n_control_points, scale=self.playfield, np_random=self.np_random)
+            a = bezier.get_random_points(
+                n=self.n_control_points, scale=self.playfield, np_random=self.np_random
+            )
             x, y, _ = bezier.get_bezier_curve(a=a, rad=0.2, edgy=0.2, numpoints=40)
             self.track_data = a
 
         min_x, max_x = x[-1], x[-1]
         min_y, max_y = y[-1], y[-1]
 
-        points = list(zip(x,y))
+        points = list(zip(x, y))
         betas = []
         for i, p in enumerate(points[:-1]):
             x1, y1 = points[i]
-            x2, y2 = points[i+1]
+            x2, y2 = points[i + 1]
             dx = x2 - x1
             dy = y2 - y1
-            if (dx == dy == 0):
+            if dx == dy == 0:
                 continue
 
             # alpha = math.atan(dy/(dx+1e-5))
             alpha = np.arctan2(dy, dx)
-            beta = math.pi/2 + alpha
+            beta = math.pi / 2 + alpha
 
             track.append((alpha, beta, x1, y1))
             betas.append(beta)
@@ -328,8 +330,8 @@ class CarRacingBezier(gym.Env, EzPickle):
             max_x = max(x1, max_x)
             max_y = max(y1, max_y)
 
-        x_offset = min_x + (max_x - min_x)/2
-        y_offset = min_y + (max_y - min_y)/2
+        x_offset = min_x + (max_x - min_x) / 2
+        y_offset = min_y + (max_y - min_y) / 2
         self.x_offset = x_offset
         self.y_offset = y_offset
 
@@ -337,7 +339,7 @@ class CarRacingBezier(gym.Env, EzPickle):
         abs_dbeta = abs(betas[1:] - betas[0:-1])
         mean_abs_dbeta = abs_dbeta.mean()
         std_abs_dbeta = abs_dbeta.std()
-        one_dev_dbeta = mean_abs_dbeta + std_abs_dbeta/2
+        one_dev_dbeta = mean_abs_dbeta + std_abs_dbeta / 2
 
         # Red-white border on hard turns
         border = [False] * len(track)
@@ -386,10 +388,7 @@ class CarRacingBezier(gym.Env, EzPickle):
                 pass
             t = self.world.CreateStaticBody(fixtures=self.fd_tile)
             # t.userData = t
-            t.userData = {
-                'tile': t,
-                'index': i
-            }
+            t.userData = {"tile": t, "index": i}
             c = 0.01 * (i % 3)
             t.color = [ROAD_COLOR[0] + c, ROAD_COLOR[1] + c, ROAD_COLOR[2] + c]
             t.road_visited = False
@@ -436,8 +435,8 @@ class CarRacingBezier(gym.Env, EzPickle):
         self.x_offset = 0
         self.y_offset = 0
 
-        min_rad = TRACK_RAD*self.min_rad_ratio
-        max_rad = TRACK_RAD*self.max_rad_ratio
+        min_rad = TRACK_RAD * self.min_rad_ratio
+        max_rad = TRACK_RAD * self.max_rad_ratio
 
         # Create checkpoints
         if control_points is not None:
@@ -458,7 +457,9 @@ class CarRacingBezier(gym.Env, EzPickle):
                     self.start_alpha = 2 * math.pi * (-0.5) / CHECKPOINTS
                     rad = 1.5 * TRACK_RAD
 
-                checkpoints.append((alpha, rad * math.cos(alpha), rad * math.sin(alpha)))
+                checkpoints.append(
+                    (alpha, rad * math.cos(alpha), rad * math.sin(alpha))
+                )
 
         self.track_data = checkpoints
 
@@ -466,7 +467,7 @@ class CarRacingBezier(gym.Env, EzPickle):
 
         # Go from one checkpoint to another to create track
         # x, y, beta = 1.5 * TRACK_RAD, 0, 0
-        _,x,y = checkpoints[0]
+        _, x, y = checkpoints[0]
         beta = 0
         dest_i = 0
         laps = 0
@@ -694,7 +695,9 @@ class CarRacingBezier(gym.Env, EzPickle):
             revealed_reward = step_reward
 
         if self.clip_reward:
-            revealed_reward = min(max(revealed_reward, -self.clip_reward), self.clip_reward)
+            revealed_reward = min(
+                max(revealed_reward, -self.clip_reward), self.clip_reward
+            )
 
         return self.state, revealed_reward, done, {}
 
@@ -719,7 +722,7 @@ class CarRacingBezier(gym.Env, EzPickle):
             return  # reset() not called yet
 
         # Animate zoom first second:
-        if self.birdseye or mode in ['level', 'sketch']:
+        if self.birdseye or mode in ["level", "sketch"]:
             zoom_coef = self.full_zoom
         else:
             zoom_coef = ZOOM
@@ -736,7 +739,7 @@ class CarRacingBezier(gym.Env, EzPickle):
             angle = math.atan2(vel[0], vel[1])
         self.transform.set_scale(zoom, zoom)
 
-        if self.birdseye or mode in ['level', 'sketch']:
+        if self.birdseye or mode in ["level", "sketch"]:
             self.transform.set_translation(
                 WINDOW_W / 2,
                 WINDOW_H / 2,
@@ -745,9 +748,15 @@ class CarRacingBezier(gym.Env, EzPickle):
         else:
             self.transform.set_translation(
                 WINDOW_W / 2
-                - (scroll_x * zoom * math.cos(angle) - scroll_y * zoom * math.sin(angle)),
+                - (
+                    scroll_x * zoom * math.cos(angle)
+                    - scroll_y * zoom * math.sin(angle)
+                ),
                 WINDOW_H / 4
-                - (scroll_x * zoom * math.sin(angle) + scroll_y * zoom * math.cos(angle)),
+                - (
+                    scroll_x * zoom * math.sin(angle)
+                    + scroll_y * zoom * math.cos(angle)
+                ),
             )
             self.transform.set_rotation(angle)
 
@@ -783,7 +792,7 @@ class CarRacingBezier(gym.Env, EzPickle):
         self.viewer.onetime_geoms = []
         t.disable()
 
-        if mode not in ['level', 'sketch'] and self.show_indicators:
+        if mode not in ["level", "sketch"] and self.show_indicators:
             self.render_indicators(WINDOW_W, WINDOW_H)
 
         if mode == "human":
@@ -918,13 +927,13 @@ class CarRacingBezier(gym.Env, EzPickle):
         self.score_label.draw()
 
 
-if hasattr(__loader__, 'name'):
-  module_path = __loader__.name
-elif hasattr(__loader__, 'fullname'):
-  module_path = __loader__.fullname
+if hasattr(__loader__, "name"):
+    module_path = __loader__.name
+elif hasattr(__loader__, "fullname"):
+    module_path = __loader__.fullname
 
 try:
-    gym_register(id='CarRacing-Bezier-v0', entry_point=module_path + ':CarRacingBezier')
+    gym_register(id="CarRacing-Bezier-v0", entry_point=module_path + ":CarRacingBezier")
 except:
     pass
 
@@ -933,20 +942,15 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--track_name', 
-        type=str, 
-        default=None, 
-        help='Name of preexisting track.')
+        "--track_name", type=str, default=None, help="Name of preexisting track."
+    )
     parser.add_argument(
-        '--birdseye', 
-        action='store_true',
-        default=False, 
-        help='Show a fixed birdseye view of track.')
-    parser.add_argument(
-        '--seed', 
-        type=int,
-        default=None, 
-        help='PRNG seed.')
+        "--birdseye",
+        action="store_true",
+        default=False,
+        help="Show a fixed birdseye view of track.",
+    )
+    parser.add_argument("--seed", type=int, default=None, help="PRNG seed.")
     args = parser.parse_args()
 
     a = np.array([0.0, 0.0, 0.0])
@@ -974,7 +978,9 @@ if __name__ == "__main__":
         if k == key.DOWN:
             a[2] = 0
 
-    env = CarRacingBezier(track_name=args.track_name, birdseye=args.birdseye, seed=args.seed)
+    env = CarRacingBezier(
+        track_name=args.track_name, birdseye=args.birdseye, seed=args.seed
+    )
     env.render()
     env.viewer.window.on_key_press = key_press
     env.viewer.window.on_key_release = key_release

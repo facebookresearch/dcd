@@ -1,5 +1,5 @@
 # Copyright (c) OpenAI
-# 
+#
 # Licensed under the MIT License;
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -14,24 +14,37 @@ import math
 import numpy as np
 
 import Box2D
-from Box2D.b2 import (edgeShape, circleShape, fixtureDef,
-                      polygonShape, revoluteJointDef, contactListener)
+from Box2D.b2 import (
+    edgeShape,
+    circleShape,
+    fixtureDef,
+    polygonShape,
+    revoluteJointDef,
+    contactListener,
+)
 
 import gym
 from gym import spaces
 from gym.utils import colorize, seeding
 from collections import namedtuple
 
-EnvConfig = namedtuple('EnvConfig', [
-    'name',
-    'ground_roughness',
-    'pit_gap',
-    'stump_width',  'stump_height', 'stump_float',
-    'stair_height', 'stair_width', 'stair_steps'
-])
+EnvConfig = namedtuple(
+    "EnvConfig",
+    [
+        "name",
+        "ground_roughness",
+        "pit_gap",
+        "stump_width",
+        "stump_height",
+        "stump_float",
+        "stair_height",
+        "stair_width",
+        "stair_steps",
+    ],
+)
 
 FPS = 50
-SCALE = 30.0   # Affects how fast-paced the game is, forces should be adjusted as well
+SCALE = 30.0  # Affects how fast-paced the game is, forces should be adjusted as well
 
 MOTORS_TORQUE = 80
 SPEED_HIP = 4
@@ -40,10 +53,7 @@ LIDAR_RANGE = 160 / SCALE
 
 INITIAL_RANDOM = 5
 
-HULL_POLY = [
-    (-30, +9), (+6, +9), (+34, +1),
-    (+34, -8), (-30, -8)
-]
+HULL_POLY = [(-30, +9), (+6, +9), (+34, +1), (+34, -8), (-30, -8)]
 LEG_DOWN = -8 / SCALE
 LEG_W, LEG_H = 8 / SCALE, 34 / SCALE
 
@@ -51,34 +61,36 @@ VIEWPORT_W = 600
 VIEWPORT_H = 400
 
 TERRAIN_STEP = 14 / SCALE
-TERRAIN_LENGTH = 200     # in steps
+TERRAIN_LENGTH = 200  # in steps
 TERRAIN_HEIGHT = VIEWPORT_H / SCALE / 4
-TERRAIN_GRASS = 10    # low long are grass spots, in steps
-TERRAIN_STARTPAD = 20    # in steps
+TERRAIN_GRASS = 10  # low long are grass spots, in steps
+TERRAIN_STARTPAD = 20  # in steps
 FRICTION = 2.5
 
 HULL_FD = fixtureDef(
-    shape=polygonShape(vertices=[(x / SCALE, y / SCALE)
-                                 for x, y in HULL_POLY]),
+    shape=polygonShape(vertices=[(x / SCALE, y / SCALE) for x, y in HULL_POLY]),
     density=5.0,
     friction=0.1,
     categoryBits=0x0020,
     maskBits=0x001,  # collide only with ground
-    restitution=0.0)  # 0.99 bouncy
+    restitution=0.0,
+)  # 0.99 bouncy
 
 LEG_FD = fixtureDef(
     shape=polygonShape(box=(LEG_W / 2, LEG_H / 2)),
     density=1.0,
     restitution=0.0,
     categoryBits=0x0020,
-    maskBits=0x001)
+    maskBits=0x001,
+)
 
 LOWER_FD = fixtureDef(
     shape=polygonShape(box=(0.8 * LEG_W / 2, LEG_H / 2)),
     density=1.0,
     restitution=0.0,
     categoryBits=0x0020,
-    maskBits=0x001)
+    maskBits=0x001,
+)
 
 STAIR_HEIGHT_EPS = 1e-2
 
@@ -89,7 +101,10 @@ class ContactDetector(contactListener):
         self.env = env
 
     def BeginContact(self, contact):
-        if self.env.hull == contact.fixtureA.body or self.env.hull == contact.fixtureB.body:
+        if (
+            self.env.hull == contact.fixtureA.body
+            or self.env.hull == contact.fixtureB.body
+        ):
             self.env.game_over = True
         for leg in [self.env.legs[1], self.env.legs[3]]:
             if leg in [contact.fixtureA.body, contact.fixtureB.body]:
@@ -102,13 +117,12 @@ class ContactDetector(contactListener):
 
 
 class BipedalWalkerCustom(gym.Env):
-    metadata = {
-        'render.modes': ['human', 'rgb_array'],
-        'video.frames_per_second': FPS
-    }
+    metadata = {"render.modes": ["human", "rgb_array"], "video.frames_per_second": FPS}
 
     def __repr__(self):
-        return "{}\nenv\n{}".format(self.__dict__, self.__dict__["np_random"].get_state())
+        return "{}\nenv\n{}".format(
+            self.__dict__, self.__dict__["np_random"].get_state()
+        )
 
     def __init__(self, env_config, seed=None):
         self.spec = None
@@ -124,15 +138,12 @@ class BipedalWalkerCustom(gym.Env):
 
         self.prev_shaping = None
         self.fd_polygon = fixtureDef(
-            shape=polygonShape(vertices=[(0, 0),
-                                         (1, 0),
-                                         (1, -1),
-                                         (0, -1)]),
-            friction=FRICTION)
+            shape=polygonShape(vertices=[(0, 0), (1, 0), (1, -1), (0, -1)]),
+            friction=FRICTION,
+        )
 
         self.fd_edge = fixtureDef(
-            shape=edgeShape(vertices=[(0, 0),
-                                      (1, 1)]),
+            shape=edgeShape(vertices=[(0, 0), (1, 1)]),
             friction=FRICTION,
             categoryBits=0x0001,
         )
@@ -141,7 +152,8 @@ class BipedalWalkerCustom(gym.Env):
 
         high = np.array([np.inf] * 24)
         self.action_space = spaces.Box(
-            np.array([-1, -1, -1, -1]), np.array([+1, +1, +1, +1]))
+            np.array([-1, -1, -1, -1]), np.array([+1, +1, +1, +1])
+        )
         self.observation_space = spaces.Box(-high, high)
 
     def re_init(self, env_config, seed):
@@ -159,15 +171,12 @@ class BipedalWalkerCustom(gym.Env):
 
         self.prev_shaping = None
         self.fd_polygon = fixtureDef(
-            shape=polygonShape(vertices=[(0, 0),
-                                         (1, 0),
-                                         (1, -1),
-                                         (0, -1)]),
-            friction=FRICTION)
+            shape=polygonShape(vertices=[(0, 0), (1, 0), (1, -1), (0, -1)]),
+            friction=FRICTION,
+        )
 
         self.fd_edge = fixtureDef(
-            shape=edgeShape(vertices=[(0, 0),
-                                      (1, 1)]),
+            shape=edgeShape(vertices=[(0, 0), (1, 1)]),
             friction=FRICTION,
             categoryBits=0x0001,
         )
@@ -186,12 +195,20 @@ class BipedalWalkerCustom(gym.Env):
         self.STUMP, self.STAIRS, self.PIT = -1, -1, -1
         self._STATES_ = 1
 
-        if self.config.stump_width and self.config.stump_height and self.config.stump_float:
+        if (
+            self.config.stump_width
+            and self.config.stump_height
+            and self.config.stump_float
+        ):
             # STUMP exist
             self.STUMP = self._STATES_
             self._STATES_ += 1
 
-        if self.config.stair_height and self.config.stair_width and self.config.stair_steps:
+        if (
+            self.config.stair_height
+            and self.config.stair_width
+            and self.config.stair_steps
+        ):
             # STAIRS exist
             self.STAIRS = self._STATES_
             self._STATES_ += 1
@@ -206,8 +223,9 @@ class BipedalWalkerCustom(gym.Env):
 
     def save_env_def(self, filename):
         import json
-        a = {'config': self.config._asdict(), 'seed': self.env_seed}
-        with open(filename, 'w') as f:
+
+        a = {"config": self.config._asdict(), "seed": self.env_seed}
+        with open(filename, "w") as f:
             json.dump(a, f)
 
     def seed(self, seed=None):
@@ -240,14 +258,19 @@ class BipedalWalkerCustom(gym.Env):
         # counter = np.ceil(stump_width)
         counter = stump_width
         countery = stump_height
-        poly = [(x, y + stump_float * terrain_step),
-                (x + stump_width * terrain_step, y + stump_float * terrain_step),
-                (x + stump_width * terrain_step, y + countery * terrain_step + stump_float * terrain_step),
-                (x, y + countery * terrain_step + stump_float * terrain_step), ]
+        poly = [
+            (x, y + stump_float * terrain_step),
+            (x + stump_width * terrain_step, y + stump_float * terrain_step),
+            (
+                x + stump_width * terrain_step,
+                y + countery * terrain_step + stump_float * terrain_step,
+            ),
+            (x, y + countery * terrain_step + stump_float * terrain_step),
+        ]
         return poly
 
     def _generate_terrain(self, hardcore):
-        #GRASS, STUMP, STAIRS, PIT, _STATES_ = range(5)
+        # GRASS, STUMP, STAIRS, PIT, _STATES_ = range(5)
         state = self.GRASS
         velocity = 0.0
         y = TERRAIN_HEIGHT
@@ -263,14 +286,17 @@ class BipedalWalkerCustom(gym.Env):
 
             if state == self.GRASS and not oneshot:
                 velocity = 0.8 * velocity + 0.01 * np.sign(TERRAIN_HEIGHT - y)
-                if self.env_params is not None and self.env_params.altitude_fn is not None:
+                if (
+                    self.env_params is not None
+                    and self.env_params.altitude_fn is not None
+                ):
                     y += velocity
                     if i > TERRAIN_STARTPAD:
-                        mid = TERRAIN_LENGTH * TERRAIN_STEP / 2.
+                        mid = TERRAIN_LENGTH * TERRAIN_STEP / 2.0
                         x_ = (x - mid) * np.pi / mid
-                        y = TERRAIN_HEIGHT + self.env_params.altitude_fn((x_, ))[0]
-                        if i == TERRAIN_STARTPAD+1:
-                            y_norm = self.env_params.altitude_fn((x_, ))[0]
+                        y = TERRAIN_HEIGHT + self.env_params.altitude_fn((x_,))[0]
+                        if i == TERRAIN_STARTPAD + 1:
+                            y_norm = self.env_params.altitude_fn((x_,))[0]
                         y -= y_norm
                 else:
                     if i > TERRAIN_STARTPAD:
@@ -283,21 +309,20 @@ class BipedalWalkerCustom(gym.Env):
                 pit_diff = counter - pit_gap
 
                 poly = [
-                    (x,              y),
+                    (x, y),
                     (x + TERRAIN_STEP, y),
                     (x + TERRAIN_STEP, y - 4 * TERRAIN_STEP),
-                    (x,              y - 4 * TERRAIN_STEP),
+                    (x, y - 4 * TERRAIN_STEP),
                 ]
                 self.fd_polygon.shape.vertices = poly
-                t = self.world.CreateStaticBody(
-                    fixtures=self.fd_polygon)
+                t = self.world.CreateStaticBody(fixtures=self.fd_polygon)
                 t.color1, t.color2 = (1, 1, 1), (0.6, 0.6, 0.6)
                 self.terrain.append(t)
 
                 self.fd_polygon.shape.vertices = [
-                    (p[0] + TERRAIN_STEP * pit_gap, p[1]) for p in poly]
-                t = self.world.CreateStaticBody(
-                    fixtures=self.fd_polygon)
+                    (p[0] + TERRAIN_STEP * pit_gap, p[1]) for p in poly
+                ]
+                t = self.world.CreateStaticBody(fixtures=self.fd_polygon)
                 t.color1, t.color2 = (1, 1, 1), (0.6, 0.6, 0.6)
                 self.terrain.append(t)
                 counter += 2
@@ -312,7 +337,7 @@ class BipedalWalkerCustom(gym.Env):
                     pit_diff = 0
 
             elif state == self.STUMP and oneshot:
-                # Sometimes this doesnt work due to randomness, 
+                # Sometimes this doesnt work due to randomness,
                 # so iterate until it does
                 attempts = 0
                 done = False
@@ -329,14 +354,12 @@ class BipedalWalkerCustom(gym.Env):
                             print("Stump issues: num attempts: ", attempts)
                             done = True
 
-                t = self.world.CreateStaticBody(
-                    fixtures=self.fd_polygon)
+                t = self.world.CreateStaticBody(fixtures=self.fd_polygon)
                 t.color1, t.color2 = (1, 1, 1), (0.6, 0.6, 0.6)
                 self.terrain.append(t)
 
             elif state == self.STAIRS and oneshot:
-                stair_height = self.np_random.uniform(
-                    *self.config.stair_height)
+                stair_height = self.np_random.uniform(*self.config.stair_height)
                 stair_slope = 1 if self.np_random.rand() > 0.5 else -1
                 stair_width = self.np_random.randint(*self.config.stair_width)
                 stair_steps = self.np_random.randint(*self.config.stair_steps)
@@ -344,15 +367,32 @@ class BipedalWalkerCustom(gym.Env):
 
                 if stair_height > STAIR_HEIGHT_EPS:
                     for s in range(stair_steps):
-                        poly = [(x + (s * stair_width) * TERRAIN_STEP, y + (s * stair_height * stair_slope) * TERRAIN_STEP),
-                                (x + ((1 + s) * stair_width) * TERRAIN_STEP, y + (s * stair_height * stair_slope) * TERRAIN_STEP),
-                                (x + ((1 + s) * stair_width) * TERRAIN_STEP, y + (-stair_height + s * stair_height * stair_slope) * TERRAIN_STEP),
-                                (x + (s * stair_width) * TERRAIN_STEP, y + (-stair_height + s * stair_height * stair_slope) * TERRAIN_STEP), ]
+                        poly = [
+                            (
+                                x + (s * stair_width) * TERRAIN_STEP,
+                                y + (s * stair_height * stair_slope) * TERRAIN_STEP,
+                            ),
+                            (
+                                x + ((1 + s) * stair_width) * TERRAIN_STEP,
+                                y + (s * stair_height * stair_slope) * TERRAIN_STEP,
+                            ),
+                            (
+                                x + ((1 + s) * stair_width) * TERRAIN_STEP,
+                                y
+                                + (-stair_height + s * stair_height * stair_slope)
+                                * TERRAIN_STEP,
+                            ),
+                            (
+                                x + (s * stair_width) * TERRAIN_STEP,
+                                y
+                                + (-stair_height + s * stair_height * stair_slope)
+                                * TERRAIN_STEP,
+                            ),
+                        ]
 
                         self.fd_polygon.shape.vertices = poly
 
-                        t = self.world.CreateStaticBody(
-                            fixtures=self.fd_polygon)
+                        t = self.world.CreateStaticBody(fixtures=self.fd_polygon)
                         t.color1, t.color2 = (1, 1, 1), (0.6, 0.6, 0.6)
                         self.terrain.append(t)
                     counter = stair_steps * stair_width + 1
@@ -360,15 +400,17 @@ class BipedalWalkerCustom(gym.Env):
             elif state == self.STAIRS and not oneshot:
                 s = stair_steps * stair_width - counter
                 n = s // stair_width
-                y = original_y + (n * stair_height * stair_slope) * TERRAIN_STEP - \
-                    (stair_height if stair_slope == -1 else 0) * TERRAIN_STEP
+                y = (
+                    original_y
+                    + (n * stair_height * stair_slope) * TERRAIN_STEP
+                    - (stair_height if stair_slope == -1 else 0) * TERRAIN_STEP
+                )
 
             oneshot = False
             self.terrain_y.append(y)
             counter -= 1
             if counter == 0:
-                counter = self.np_random.randint(
-                    TERRAIN_GRASS / 2, TERRAIN_GRASS)
+                counter = self.np_random.randint(TERRAIN_GRASS / 2, TERRAIN_GRASS)
                 if state == self.GRASS and hardcore:
                     state = self.np_random.randint(1, self._STATES_)
                     oneshot = True
@@ -379,12 +421,11 @@ class BipedalWalkerCustom(gym.Env):
         self.terrain_poly = []
         for i in range(TERRAIN_LENGTH - 1):
             poly = [
-                (self.terrain_x[i],   self.terrain_y[i]),
-                (self.terrain_x[i + 1], self.terrain_y[i + 1])
+                (self.terrain_x[i], self.terrain_y[i]),
+                (self.terrain_x[i + 1], self.terrain_y[i + 1]),
             ]
             self.fd_edge.shape.vertices = poly
-            t = self.world.CreateStaticBody(
-                fixtures=self.fd_edge)
+            t = self.world.CreateStaticBody(fixtures=self.fd_edge)
             color = (0.3, 1.0 if i % 2 == 0 else 0.8, 0.3)
             t.color1 = color
             t.color2 = color
@@ -401,9 +442,16 @@ class BipedalWalkerCustom(gym.Env):
             x = self.np_random.uniform(0, TERRAIN_LENGTH) * TERRAIN_STEP
             y = VIEWPORT_H / SCALE * 3 / 4
             poly = [
-                (x + 15 * TERRAIN_STEP * math.sin(3.14 * 2 * a / 5) + self.np_random.uniform(0, 5 * TERRAIN_STEP),
-                 y + 5 * TERRAIN_STEP * math.cos(3.14 * 2 * a / 5) + self.np_random.uniform(0, 5 * TERRAIN_STEP))
-                for a in range(5)]
+                (
+                    x
+                    + 15 * TERRAIN_STEP * math.sin(3.14 * 2 * a / 5)
+                    + self.np_random.uniform(0, 5 * TERRAIN_STEP),
+                    y
+                    + 5 * TERRAIN_STEP * math.cos(3.14 * 2 * a / 5)
+                    + self.np_random.uniform(0, 5 * TERRAIN_STEP),
+                )
+                for a in range(5)
+            ]
             x1 = min([p[0] for p in poly])
             x2 = max([p[0] for p in poly])
             self.cloud_poly.append((poly, x1, x2))
@@ -428,13 +476,13 @@ class BipedalWalkerCustom(gym.Env):
         init_x = TERRAIN_STEP * TERRAIN_STARTPAD / 2
         init_y = TERRAIN_HEIGHT + 2 * LEG_H
         self.hull = self.world.CreateDynamicBody(
-            position=(init_x, init_y),
-            fixtures=HULL_FD
+            position=(init_x, init_y), fixtures=HULL_FD
         )
         self.hull.color1 = (0.5, 0.4, 0.9)
         self.hull.color2 = (0.3, 0.3, 0.5)
         self.hull.ApplyForceToCenter(
-            (self.np_random.uniform(-INITIAL_RANDOM, INITIAL_RANDOM), 0), True)
+            (self.np_random.uniform(-INITIAL_RANDOM, INITIAL_RANDOM), 0), True
+        )
 
         self.legs = []
         self.joints = []
@@ -442,10 +490,10 @@ class BipedalWalkerCustom(gym.Env):
             leg = self.world.CreateDynamicBody(
                 position=(init_x, init_y - LEG_H / 2 - LEG_DOWN),
                 angle=(i * 0.05),
-                fixtures=LEG_FD
+                fixtures=LEG_FD,
             )
-            leg.color1 = (0.6 - i / 10., 0.3 - i / 10., 0.5 - i / 10.)
-            leg.color2 = (0.4 - i / 10., 0.2 - i / 10., 0.3 - i / 10.)
+            leg.color1 = (0.6 - i / 10.0, 0.3 - i / 10.0, 0.5 - i / 10.0)
+            leg.color2 = (0.4 - i / 10.0, 0.2 - i / 10.0, 0.3 - i / 10.0)
             rjd = revoluteJointDef(
                 bodyA=self.hull,
                 bodyB=leg,
@@ -464,10 +512,10 @@ class BipedalWalkerCustom(gym.Env):
             lower = self.world.CreateDynamicBody(
                 position=(init_x, init_y - LEG_H * 3 / 2 - LEG_DOWN),
                 angle=(i * 0.05),
-                fixtures=LOWER_FD
+                fixtures=LOWER_FD,
             )
-            lower.color1 = (0.6 - i / 10., 0.3 - i / 10., 0.5 - i / 10.)
-            lower.color2 = (0.4 - i / 10., 0.2 - i / 10., 0.3 - i / 10.)
+            lower.color1 = (0.6 - i / 10.0, 0.3 - i / 10.0, 0.5 - i / 10.0)
+            lower.color2 = (0.4 - i / 10.0, 0.2 - i / 10.0, 0.3 - i / 10.0)
             rjd = revoluteJointDef(
                 bodyA=leg,
                 bodyB=lower,
@@ -493,6 +541,7 @@ class BipedalWalkerCustom(gym.Env):
                 self.p2 = point
                 self.fraction = fraction
                 return fraction
+
         self.lidar = [LidarCallback() for _ in range(10)]
 
         return self._step(np.array([0, 0, 0, 0]))[0]
@@ -504,27 +553,27 @@ class BipedalWalkerCustom(gym.Env):
         # self.hull.ApplyForceToCenter((0, 20), True) -- Uncomment this to receive a bit of stability help
         control_speed = False  # Should be easier as well
         if control_speed:
-            self.joints[0].motorSpeed = float(
-                SPEED_HIP * np.clip(action[0], -1, 1))
-            self.joints[1].motorSpeed = float(
-                SPEED_KNEE * np.clip(action[1], -1, 1))
-            self.joints[2].motorSpeed = float(
-                SPEED_HIP * np.clip(action[2], -1, 1))
-            self.joints[3].motorSpeed = float(
-                SPEED_KNEE * np.clip(action[3], -1, 1))
+            self.joints[0].motorSpeed = float(SPEED_HIP * np.clip(action[0], -1, 1))
+            self.joints[1].motorSpeed = float(SPEED_KNEE * np.clip(action[1], -1, 1))
+            self.joints[2].motorSpeed = float(SPEED_HIP * np.clip(action[2], -1, 1))
+            self.joints[3].motorSpeed = float(SPEED_KNEE * np.clip(action[3], -1, 1))
         else:
             self.joints[0].motorSpeed = float(SPEED_HIP * np.sign(action[0]))
             self.joints[0].maxMotorTorque = float(
-                MOTORS_TORQUE * np.clip(np.abs(action[0]), 0, 1))
+                MOTORS_TORQUE * np.clip(np.abs(action[0]), 0, 1)
+            )
             self.joints[1].motorSpeed = float(SPEED_KNEE * np.sign(action[1]))
             self.joints[1].maxMotorTorque = float(
-                MOTORS_TORQUE * np.clip(np.abs(action[1]), 0, 1))
+                MOTORS_TORQUE * np.clip(np.abs(action[1]), 0, 1)
+            )
             self.joints[2].motorSpeed = float(SPEED_HIP * np.sign(action[2]))
             self.joints[2].maxMotorTorque = float(
-                MOTORS_TORQUE * np.clip(np.abs(action[2]), 0, 1))
+                MOTORS_TORQUE * np.clip(np.abs(action[2]), 0, 1)
+            )
             self.joints[3].motorSpeed = float(SPEED_KNEE * np.sign(action[3]))
             self.joints[3].maxMotorTorque = float(
-                MOTORS_TORQUE * np.clip(np.abs(action[3]), 0, 1))
+                MOTORS_TORQUE * np.clip(np.abs(action[3]), 0, 1)
+            )
 
         self.world.Step(1.0 / FPS, 6 * 30, 2 * 30)
 
@@ -536,9 +585,9 @@ class BipedalWalkerCustom(gym.Env):
             self.lidar[i].p1 = pos
             self.lidar[i].p2 = (
                 pos[0] + math.sin(1.5 * i / 10.0) * LIDAR_RANGE,
-                pos[1] - math.cos(1.5 * i / 10.0) * LIDAR_RANGE)
-            self.world.RayCast(
-                self.lidar[i], self.lidar[i].p1, self.lidar[i].p2)
+                pos[1] - math.cos(1.5 * i / 10.0) * LIDAR_RANGE,
+            )
+            self.world.RayCast(self.lidar[i], self.lidar[i].p1, self.lidar[i].p2)
 
         state = [
             # Normal angles up to 0.5 here, but sure more is possible.
@@ -557,7 +606,7 @@ class BipedalWalkerCustom(gym.Env):
             self.joints[2].speed / SPEED_HIP,
             self.joints[3].angle + 1.0,
             self.joints[3].speed / SPEED_KNEE,
-            1.0 if self.legs[3].ground_contact else 0.0
+            1.0 if self.legs[3].ground_contact else 0.0,
         ]
         state += [l.fraction for l in self.lidar]
         assert len(state) == 24
@@ -590,7 +639,7 @@ class BipedalWalkerCustom(gym.Env):
     def render(self, *args, **kwargs):
         return self._render(*args, **kwargs)
 
-    def _render(self, mode='level', close=False):
+    def _render(self, mode="level", close=False):
         if close:
             if self.viewer is not None:
                 self.viewer.close()
@@ -598,24 +647,30 @@ class BipedalWalkerCustom(gym.Env):
             return
 
         from gym.envs.classic_control import rendering
+
         if self.viewer is None:
             self.viewer = rendering.Viewer(VIEWPORT_W, VIEWPORT_H)
-        self.viewer.set_bounds(self.scroll, VIEWPORT_W /
-                               SCALE + self.scroll, 0, VIEWPORT_H / SCALE)
+        self.viewer.set_bounds(
+            self.scroll, VIEWPORT_W / SCALE + self.scroll, 0, VIEWPORT_H / SCALE
+        )
 
-        self.viewer.draw_polygon([
-            (self.scroll,                  0),
-            (self.scroll + VIEWPORT_W / SCALE, 0),
-            (self.scroll + VIEWPORT_W / SCALE, VIEWPORT_H / SCALE),
-            (self.scroll,                  VIEWPORT_H / SCALE),
-        ], color=(0.9, 0.9, 1.0))
+        self.viewer.draw_polygon(
+            [
+                (self.scroll, 0),
+                (self.scroll + VIEWPORT_W / SCALE, 0),
+                (self.scroll + VIEWPORT_W / SCALE, VIEWPORT_H / SCALE),
+                (self.scroll, VIEWPORT_H / SCALE),
+            ],
+            color=(0.9, 0.9, 1.0),
+        )
         for poly, x1, x2 in self.cloud_poly:
             if x2 < self.scroll / 2:
                 continue
             if x1 > self.scroll / 2 + VIEWPORT_W / SCALE:
                 continue
             self.viewer.draw_polygon(
-                [(p[0] + self.scroll / 2, p[1]) for p in poly], color=(1, 1, 1))
+                [(p[0] + self.scroll / 2, p[1]) for p in poly], color=(1, 1, 1)
+            )
         for poly, color in self.terrain_poly:
             if poly[1][0] < self.scroll:
                 continue
@@ -626,10 +681,12 @@ class BipedalWalkerCustom(gym.Env):
         self.lidar_render = (self.lidar_render + 1) % 100
         i = self.lidar_render
         if i < 2 * len(self.lidar):
-            l = self.lidar[i] if i < len(
-                self.lidar) else self.lidar[len(self.lidar) - i - 1]
-            self.viewer.draw_polyline(
-                [l.p1, l.p2], color=(1, 0, 0), linewidth=1)
+            l = (
+                self.lidar[i]
+                if i < len(self.lidar)
+                else self.lidar[len(self.lidar) - i - 1]
+            )
+            self.viewer.draw_polyline([l.p1, l.p2], color=(1, 0, 0), linewidth=1)
 
         for obj in self.drawlist:
             for f in obj.fixtures:
@@ -637,26 +694,31 @@ class BipedalWalkerCustom(gym.Env):
                 if type(f.shape) is circleShape:
                     t = rendering.Transform(translation=trans * f.shape.pos)
                     self.viewer.draw_circle(
-                        f.shape.radius, 30, color=obj.color1).add_attr(t)
+                        f.shape.radius, 30, color=obj.color1
+                    ).add_attr(t)
                     self.viewer.draw_circle(
-                        f.shape.radius, 30, color=obj.color2, filled=False, linewidth=2).add_attr(t)
+                        f.shape.radius, 30, color=obj.color2, filled=False, linewidth=2
+                    ).add_attr(t)
                 else:
                     path = [trans * v for v in f.shape.vertices]
                     self.viewer.draw_polygon(path, color=obj.color1)
                     path.append(path[0])
-                    self.viewer.draw_polyline(
-                        path, color=obj.color2, linewidth=2)
+                    self.viewer.draw_polyline(path, color=obj.color2, linewidth=2)
 
         flagy1 = TERRAIN_HEIGHT
         flagy2 = flagy1 + 50 / SCALE
         x = TERRAIN_STEP * 3
         self.viewer.draw_polyline(
-            [(x, flagy1), (x, flagy2)], color=(0, 0, 0), linewidth=2)
-        f = [(x, flagy2), (x, flagy2 - 10 / SCALE),
-             (x + 25 / SCALE, flagy2 - 5 / SCALE)]
+            [(x, flagy1), (x, flagy2)], color=(0, 0, 0), linewidth=2
+        )
+        f = [
+            (x, flagy2),
+            (x, flagy2 - 10 / SCALE),
+            (x + 25 / SCALE, flagy2 - 5 / SCALE),
+        ]
         self.viewer.draw_polygon(f, color=(0.9, 0.2, 0))
         self.viewer.draw_polyline(f + [f[0]], color=(0, 0, 0), linewidth=2)
 
-        return_rgb_array = mode in ['rgb_array', 'level']
+        return_rgb_array = mode in ["rgb_array", "level"]
 
-        return self.viewer.render(return_rgb_array=mode == 'rgb_array')
+        return self.viewer.render(return_rgb_array=mode == "rgb_array")

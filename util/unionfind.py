@@ -17,6 +17,7 @@ A union-find disjoint set data structure.
 # Third-party libraries
 import numpy as np
 
+
 class UnionFind(object):
     """Union-find disjoint sets datastructure.
 
@@ -105,17 +106,14 @@ class UnionFind(object):
         for elt in elements:
             self.add(elt)
 
-
     def __repr__(self):
-        return  (
-            '<UnionFind:\n\telts={},\n\tsiz={},\n\tpar={},\nn_elts={},n_comps={}>'
-            .format(
-                self._elts,
-                self._siz,
-                self._par,
-                self.n_elts,
-                self.n_comps,
-            ))
+        return "<UnionFind:\n\telts={},\n\tsiz={},\n\tpar={},\nn_elts={},n_comps={}>".format(
+            self._elts,
+            self._siz,
+            self._par,
+            self.n_elts,
+            self.n_comps,
+        )
 
     def __len__(self):
         return self.n_elts
@@ -125,12 +123,12 @@ class UnionFind(object):
 
     def __getitem__(self, index):
         if index < 0 or index >= self._next:
-            raise IndexError('index {} is out of bound'.format(index))
+            raise IndexError("index {} is out of bound".format(index))
         return self._elts[index]
 
     def __setitem__(self, index, x):
         if index < 0 or index >= self._next:
-            raise IndexError('index {} is out of bound'.format(index))
+            raise IndexError("index {} is out of bound".format(index))
         self._elts[index] = x
 
     def add(self, x):
@@ -174,7 +172,7 @@ class UnionFind(object):
 
         """
         if x not in self._indx:
-            raise ValueError('{} is not an element'.format(x))
+            raise ValueError("{} is not an element".format(x))
 
         p = self._indx[x]
         while p != self._par[p]:
@@ -248,7 +246,7 @@ class UnionFind(object):
 
         """
         if x not in self:
-            raise ValueError('{} is not an element'.format(x))
+            raise ValueError("{} is not an element".format(x))
         elts = np.array(self._elts)
         vfind = np.vectorize(self.find)
         roots = vfind(elts)
@@ -326,7 +324,7 @@ class UnionFind(object):
         distinct_roots = set(roots)
         comps = {}
         for root in distinct_roots:
-            mask = (roots == root)
+            mask = roots == root
             comp = set(elts[mask])
             comps.update({x: comp for x in comp})
             # Change ^this^, if you want a different behaviour:

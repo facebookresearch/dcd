@@ -23,20 +23,18 @@ class CrossingEnv(MiniGridEnv):
         self.obstacle_type = obstacle_type
         super().__init__(
             grid_size=size,
-            max_steps=4*size*size,
+            max_steps=4 * size * size,
             # Set this to True for maximum speed
             see_through_walls=False,
             seed=None,
-            agent_view_size=5
+            agent_view_size=5,
         )
 
-        direction_obs_space = gym.spaces.Box(
-            low=0, high=3, shape=(1,), dtype='uint8')
+        direction_obs_space = gym.spaces.Box(low=0, high=3, shape=(1,), dtype="uint8")
 
-        self.observation_space = spaces.Dict({
-            'image': self.observation_space['image'],
-            'direction': direction_obs_space
-        })
+        self.observation_space = spaces.Dict(
+            {"image": self.observation_space["image"], "direction": direction_obs_space}
+        )
 
     def _gen_grid(self, width, height):
         assert width % 2 == 1 and height % 2 == 1  # odd size
@@ -61,7 +59,7 @@ class CrossingEnv(MiniGridEnv):
         rivers = [(v, i) for i in range(2, height - 2, 2)]
         rivers += [(h, j) for j in range(2, width - 2, 2)]
         self.np_random.shuffle(rivers)
-        rivers = rivers[:self.num_crossings]  # sample random rivers
+        rivers = rivers[: self.num_crossings]  # sample random rivers
         rivers_v = sorted([pos for direction, pos in rivers if direction is v])
         rivers_h = sorted([pos for direction, pos in rivers if direction is h])
         obstacle_pos = itt.chain(
@@ -83,11 +81,13 @@ class CrossingEnv(MiniGridEnv):
             if direction is h:
                 i = limits_v[room_i + 1]
                 j = self.np_random.choice(
-                    range(limits_h[room_j] + 1, limits_h[room_j + 1]))
+                    range(limits_h[room_j] + 1, limits_h[room_j + 1])
+                )
                 room_i += 1
             elif direction is v:
                 i = self.np_random.choice(
-                    range(limits_v[room_i] + 1, limits_v[room_i + 1]))
+                    range(limits_v[room_i] + 1, limits_v[room_i + 1])
+                )
                 j = limits_h[room_j + 1]
                 room_j += 1
             else:
@@ -103,95 +103,103 @@ class CrossingEnv(MiniGridEnv):
     def step(self, action):
         obs, rewards, done, info = super().step(action)
 
-        del obs['mission']
-        obs['image'] = obs['image']
-        obs['direction'] = [self.agent_dir]
+        del obs["mission"]
+        obs["image"] = obs["image"]
+        obs["direction"] = [self.agent_dir]
 
         return obs, rewards, done, info
 
     def reset(self):
         obs = super().reset()
 
-        del obs['mission']
-        obs['image'] = obs['image']
-        obs['direction'] = [self.agent_dir]
+        del obs["mission"]
+        obs["image"] = obs["image"]
+        obs["direction"] = [self.agent_dir]
 
         return obs
+
 
 class LavaCrossingEnv(CrossingEnv):
     def __init__(self):
         super().__init__(size=9, num_crossings=1)
 
+
 class LavaCrossingS9N2Env(CrossingEnv):
     def __init__(self):
         super().__init__(size=9, num_crossings=2)
+
 
 class LavaCrossingS9N3Env(CrossingEnv):
     def __init__(self):
         super().__init__(size=9, num_crossings=3)
 
+
 class LavaCrossingS11N5Env(CrossingEnv):
     def __init__(self):
         super().__init__(size=11, num_crossings=5)
 
+
 register(
-    id='MiniGrid-LavaCrossingS9N1-v0',
-    entry_point='gym_minigrid.envs:LavaCrossingEnv'
+    id="MiniGrid-LavaCrossingS9N1-v0", entry_point="gym_minigrid.envs:LavaCrossingEnv"
 )
 
 register(
-    id='MiniGrid-LavaCrossingS9N2-v0',
-    entry_point='gym_minigrid.envs:LavaCrossingS9N2Env'
+    id="MiniGrid-LavaCrossingS9N2-v0",
+    entry_point="gym_minigrid.envs:LavaCrossingS9N2Env",
 )
 
 register(
-    id='MiniGrid-LavaCrossingS9N3-v0',
-    entry_point='gym_minigrid.envs:LavaCrossingS9N3Env'
+    id="MiniGrid-LavaCrossingS9N3-v0",
+    entry_point="gym_minigrid.envs:LavaCrossingS9N3Env",
 )
 
 register(
-    id='MiniGrid-LavaCrossingS11N5-v0',
-    entry_point='gym_minigrid.envs:LavaCrossingS11N5Env'
+    id="MiniGrid-LavaCrossingS11N5-v0",
+    entry_point="gym_minigrid.envs:LavaCrossingS11N5Env",
 )
+
 
 class SimpleCrossingEnv(CrossingEnv):
     def __init__(self):
         super().__init__(size=9, num_crossings=1, obstacle_type=Wall)
 
+
 class SimpleCrossingS9N2Env(CrossingEnv):
     def __init__(self):
         super().__init__(size=9, num_crossings=2, obstacle_type=Wall)
+
 
 class SimpleCrossingS9N3Env(CrossingEnv):
     def __init__(self):
         super().__init__(size=9, num_crossings=3, obstacle_type=Wall)
 
+
 class SimpleCrossingS11N5Env(CrossingEnv):
     def __init__(self):
         super().__init__(size=11, num_crossings=5, obstacle_type=Wall)
 
-if hasattr(__loader__, 'name'):
-  module_path = __loader__.name
-elif hasattr(__loader__, 'fullname'):
-  module_path = __loader__.fullname
+
+if hasattr(__loader__, "name"):
+    module_path = __loader__.name
+elif hasattr(__loader__, "fullname"):
+    module_path = __loader__.fullname
 
 
 register(
-    id='MiniGrid-SimpleCrossingS9N1-v0',
-    entry_point=module_path+':SimpleCrossingEnv'
+    id="MiniGrid-SimpleCrossingS9N1-v0", entry_point=module_path + ":SimpleCrossingEnv"
 )
 
 register(
-    id='MiniGrid-SimpleCrossingS9N2-v0',
-    entry_point=module_path+':SimpleCrossingS9N2Env'
+    id="MiniGrid-SimpleCrossingS9N2-v0",
+    entry_point=module_path + ":SimpleCrossingS9N2Env",
 )
 
 register(
-    id='MiniGrid-SimpleCrossingS9N3-v0',
-    entry_point=module_path+':SimpleCrossingS9N3Env'
+    id="MiniGrid-SimpleCrossingS9N3-v0",
+    entry_point=module_path + ":SimpleCrossingS9N3Env",
 )
 
 register(
-    id='MiniGrid-SimpleCrossingS11N5-v0',
-    entry_point=module_path+':SimpleCrossingS11N5Env'
+    id="MiniGrid-SimpleCrossingS11N5-v0",
+    entry_point=module_path + ":SimpleCrossingS11N5Env",
 )

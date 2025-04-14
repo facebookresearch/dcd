@@ -9,31 +9,33 @@ from .walker_test_envs import BipedalWalkerDefault
 import pandas as pd
 
 
-BIPEDALWALKER_POET_DF_COLUMNS = \
-	['roughness', 
-	 'pitgap_low', 
-	 'pitgap_high', 
-	 'stumpheight_low', 
-	 'stumpheight_high', 
-	 'seed']
+BIPEDALWALKER_POET_DF_COLUMNS = [
+    "roughness",
+    "pitgap_low",
+    "pitgap_high",
+    "stumpheight_low",
+    "stumpheight_high",
+    "seed",
+]
 
-BIPEDALWALKER_DF_COLUMNS = \
-	['roughness', 
-	 'pitgap_low', 
-	 'pitgap_high', 
-	 'stumpheight_low',
-	 'stumpheight_high',
-	 'stairheight_low',
-	 'stairheight_high',
-	 'stair_steps',
-	 'seed']
+BIPEDALWALKER_DF_COLUMNS = [
+    "roughness",
+    "pitgap_low",
+    "pitgap_high",
+    "stumpheight_low",
+    "stumpheight_high",
+    "stairheight_low",
+    "stairheight_high",
+    "stair_steps",
+    "seed",
+]
 
 
 def bipedalwalker_df_from_encodings(env_name, encodings):
-	df = pd.DataFrame(encodings)
-	if 'POET' in env_name:
-		df.columns = BIPEDALWALKER_POET_DF_COLUMNS
-	else:
-		df.columns = BIPEDALWALKER_DF_COLUMNS
+    df = pd.DataFrame(encodings)
+    if "POET" in env_name:
+        df.columns = BIPEDALWALKER_POET_DF_COLUMNS
+    else:
+        df.columns = BIPEDALWALKER_DF_COLUMNS
 
-	return df
+    return df
