@@ -12,6 +12,9 @@ import torch
 
 
 INT32_MAX = 2147483647
+NUM_REGRETS = 5
+REGRET_DIFF_DISCOUNT_FACTOR = 0.9
+USE_REGRET_DIFF = True
 
 
 np.seterr(all='raise')
@@ -40,7 +43,8 @@ class LevelSampler():
         seed_buffer_priority='replay_support',
         use_dense_rewards=False,
         tscl_window_size=0,
-        gamma=0.999):
+        gamma=0.999,
+        ):
         """
         Inputs: 
             seeds: List, Seeds that can be sampled.
@@ -77,6 +81,8 @@ class LevelSampler():
 
         self.unseen_seed_weights = np.array([1.]*N)
         self.seed_scores = np.array([0.]*N, dtype=np.float64)
+        self.regret_scores = np.zeros((N, NUM_REGRETS), dtype=np.float64)
+        self.regret_score_index = np.array([0]*N, dtype=np.int32)
         self.partial_seed_scores = np.zeros((num_actors, N), dtype=np.float64)
         self.partial_seed_max_scores = np.ones((num_actors, N), dtype=np.float64)*float('-inf')
         self.partial_seed_steps = np.zeros((num_actors, N), dtype=np.int32)
@@ -193,6 +199,30 @@ class LevelSampler():
 
         return score, seed_idx
 
+    def _calculate_discounted_regret_diff_score(self, seed_idx):
+        regret_scores = self.regret_scores[seed_idx]
+        regret_score_index = self.regret_score_index[seed_idx]
+
+        regret_diff_score = 0.0
+
+        if regret_score_index == 1:
+            return regret_scores[0]
+
+        for i in range(1, regret_score_index):
+            regret_diff_score += regret_scores[i] - regret_scores[i-1]
+            regret_diff_score *= REGRET_DIFF_DISCOUNT_FACTOR
+
+        return regret_diff_score
+
+    def _update_regret_scores(self, seed_idx, score):
+        # If the index is full, shift the scores to the left
+        if self.regret_score_index[seed_idx] >= NUM_REGRETS:
+            self.regret_scores[seed_idx] = np.roll(self.regret_scores[seed_idx], -1)
+            self.regret_score_index[seed_idx] = NUM_REGRETS - 1
+
+        self.regret_scores[seed_idx][self.regret_score_index[seed_idx]] = score
+        self.regret_score_index[seed_idx] += 1
+
     def _partial_update_seed_score(self, actor_index, seed, score, max_score, num_steps, done=False, running_mean=True):
         seed_idx = self.seed2index.get(seed, -1)
         if seed_idx < 0:
@@ -214,6 +244,10 @@ class LevelSampler():
             self.unseen_seed_weights[seed_idx] = 0. # No longer unseen
             old_score = self.seed_scores[seed_idx]
             total_score = self.max_score_coef*merged_max_score + (1 - self.max_score_coef)*merged_score
+            if USE_REGRET_DIFF:
+                self._update_regret_scores(seed_idx, total_score)
+                total_score = self._calculate_discounted_regret_diff_score(seed_idx)
+
             self.seed_scores[seed_idx] = (1 - self.alpha)*old_score + self.alpha*total_score
         else:
             self.partial_seed_scores[actor_index][seed_idx] = merged_score
@@ -246,15 +280,19 @@ class LevelSampler():
         if done:
             # Move seed into working seed data structures
             seed_idx = self._next_buffer_index
-            if self.seed_scores[seed_idx] <= merged_score or self.unseen_seed_weights[seed_idx] > 0:
+            if self.unseen_seed_weights[seed_idx] > 0:
                 self.unseen_seed_weights[seed_idx] = 0. # Unmask this index
                 self.working_seed_set.discard(self.seeds[seed_idx])
                 self.working_seed_set.add(seed)
                 self.seeds[seed_idx] = seed
                 self.seed2index[seed] = seed_idx 
+                if USE_REGRET_DIFF:
+                    self._update_regret_scores(seed_idx, merged_score)
+                    merged_score = self._calculate_discounted_regret_diff_score(seed_idx)
+
                 self.seed_scores[seed_idx] = merged_score
                 self.partial_seed_scores[:,seed_idx] = 0.
-                self.partial_seed_steps[:,seed_idx] = 0 
+                self.partial_seed_steps[:,seed_idx] = 0
                 self.seed_staleness[seed_idx] = self.running_sample_count - self.seed2timestamp_buffer[seed]
                 self.working_seed_buffer_size = min(self.working_seed_buffer_size + 1, self.seed_buffer_size)
 
@@ -629,7 +667,7 @@ class LevelSampler():
             self.seed_staleness = self.seed_staleness + 1
             self.seed_staleness[selected_idx] = 0
 
-    def sample_replay_decision(self):
+    def sample_replay_decision(self): # bernoulli sampling
         if self.sample_full_distribution: 
             proportion_filled = self._proportion_filled
             if self.seed_buffer_size > 0:
